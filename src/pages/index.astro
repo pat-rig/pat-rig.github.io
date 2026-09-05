@@ -65,7 +65,6 @@ const byTrack = TRACKS.map((track) => ({
           <div class="track__head">
             <span class="track__kicker">{track.kicker}</span>
             <h2 class="track__title">{track.title}</h2>
-            <p class="track__desc">{track.description}</p>
           </div>
 
           {trackPosts.length > 0 ? (
@@ -175,11 +174,6 @@ const byTrack = TRACKS.map((track) => ({
   .track__title {
     font-size: var(--step-2);
     letter-spacing: -0.01em;
-  }
-
-  .track__desc {
-    margin-top: var(--space-3);
-    color: var(--text-1);
   }
 
   .entries {
