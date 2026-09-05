@@ -1,7 +1,15 @@
 ---
-import '@fontsource/ibm-plex-sans/400.css';
-import '@fontsource/ibm-plex-sans/600.css';
-import '@fontsource/ibm-plex-mono/500.css';
+/*
+ * Latin subsets only. The unscoped entrypoints also ship Cyrillic, Greek and
+ * Vietnamese, which this site will never render — browsers would not download
+ * them (unicode-range prevents that), but they bloat every deploy artifact.
+ */
+import '@fontsource/ibm-plex-sans/latin-400.css';
+import '@fontsource/ibm-plex-sans/latin-ext-400.css';
+import '@fontsource/ibm-plex-sans/latin-600.css';
+import '@fontsource/ibm-plex-sans/latin-ext-600.css';
+import '@fontsource/ibm-plex-mono/latin-500.css';
+import '@fontsource/ibm-plex-mono/latin-ext-500.css';
 import '../styles/tokens.css';
 import '../styles/global.css';
 
