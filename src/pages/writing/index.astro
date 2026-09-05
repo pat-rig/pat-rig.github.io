@@ -1,0 +1,105 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Entry from '../../components/Entry.astro';
+import { TRACKS } from '../../tracks';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+
+const byTrack = TRACKS.map((track) => ({
+  track,
+  posts: posts.filter((post) => post.data.track === track.id),
+}));
+---
+
+<BaseLayout
+  title="Writing"
+  description="Everything published here, grouped into data science work and business writing."
+>
+  <section class="intro">
+    <h1>Writing</h1>
+    <p class="intro__lede">Everything published here, in both tracks.</p>
+  </section>
+
+  {
+    byTrack.map(({ track, posts: trackPosts }) => (
+      <section class="track" id={track.id}>
+        <div class="track__head">
+          <span class="track__kicker">{track.kicker}</span>
+          <h2 class="track__title">{track.title}</h2>
+          <p class="track__desc">{track.description}</p>
+        </div>
+
+        {trackPosts.length > 0 ? (
+          <ul class="entries" role="list">
+            {trackPosts.map((post) => (
+              <Entry post={post} prominent />
+            ))}
+          </ul>
+        ) : (
+          <p class="track__empty">Nothing published here yet.</p>
+        )}
+      </section>
+    ))
+  }
+</BaseLayout>
+
+<style>
+  .intro {
+    max-width: var(--measure);
+    padding-block: var(--space-6) var(--space-7);
+  }
+
+  .intro__lede {
+    margin-top: var(--space-4);
+    font-size: var(--step-1);
+    color: var(--text-1);
+  }
+
+  .track {
+    padding-block: var(--space-6) var(--space-8);
+    border-top: 2px solid var(--text-0);
+    /* Anchor links from the landing page land here; keep the heading clear of
+       the viewport edge. */
+    scroll-margin-top: var(--space-5);
+  }
+
+  .track__head {
+    margin-bottom: var(--space-5);
+    max-width: var(--measure);
+  }
+
+  .track__kicker {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text-2);
+    margin-bottom: var(--space-2);
+  }
+
+  .track__title {
+    font-size: var(--step-2);
+    letter-spacing: -0.01em;
+  }
+
+  .track__desc {
+    margin-top: var(--space-3);
+    color: var(--text-1);
+  }
+
+  .entries {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    max-width: 52rem;
+  }
+
+  .track__empty {
+    color: var(--text-1);
+    border-top: 1px solid var(--line);
+    padding-top: var(--space-5);
+  }
+</style>

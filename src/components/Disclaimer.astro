@@ -1,0 +1,45 @@
+---
+/*
+ * The full personal-capacity note. Lives in one component so the short line in
+ * the hero and this expanded version can never drift apart.
+ *
+ * NOT legally reviewed — see PLAN.md open questions.
+ */
+---
+
+<section class="disclaimer" id="disclaimer" aria-labelledby="disclaimer-title">
+  <h2 class="disclaimer__title" id="disclaimer-title">A note on what you read here</h2>
+  <p>
+    Everything on this site is written in a personal capacity. The opinions, analyses and
+    conclusions are my own, formed in my own time, and do not represent the positions of my
+    employer or of any organisation I work with. Nothing here should be read as a statement on
+    their behalf.
+  </p>
+  <p>
+    Academic publications are the one exception. Those were carried out and published under the
+    institute named on each paper, and that work stands on its own terms — it is listed here for
+    reference, with any commentary I add around it being, again, my own view rather than the
+    institute’s.
+  </p>
+</section>
+
+<style>
+  .disclaimer {
+    max-width: var(--measure);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding-block: var(--space-6);
+    border-top: 1px solid var(--line);
+    font-size: var(--step--1);
+    color: var(--text-1);
+  }
+
+  .disclaimer__title {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    font-weight: 500;
+    color: var(--text-0);
+    margin-bottom: var(--space-1);
+  }
+</style>
