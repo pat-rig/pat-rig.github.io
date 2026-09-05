@@ -13,8 +13,12 @@ import { describe, expect, it } from 'vitest';
 const cssPath = fileURLToPath(new URL('../src/styles/tokens.css', import.meta.url));
 const css = readFileSync(cssPath, 'utf8');
 
+// Declarations only. Comments in this file discuss the tokens by name, so
+// matching against the raw text would find prose rather than CSS.
+const code = css.replace(/\/\*[\s\S]*?\*\//g, '');
+
 function block(pattern: RegExp): string {
-  const match = css.match(pattern);
+  const match = code.match(pattern);
   if (!match) throw new Error(`Could not find token block: ${pattern}`);
   return match[1];
 }
@@ -46,19 +50,13 @@ function contrast(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-// The first :root block holds the dark theme; the light theme overrides it.
-const dark = tokens(block(/:root\s*\{([\s\S]*?)\}/));
-const light = { ...dark, ...tokens(block(/prefers-color-scheme:\s*light\)\s*\{\s*:root\s*\{([\s\S]*?)\}/)) };
-
-const themes = [
-  ['dark', dark],
-  ['light', light],
-] as const;
+// The site is light-only: the single :root block holds the whole palette.
+const t = tokens(block(/:root\s*\{([\s\S]*?)\}/));
 
 const AA_TEXT = 4.5;
 const NON_TEXT = 3;
 
-describe.each(themes)('%s theme', (_name, t) => {
+describe('palette', () => {
   const surfaces = ['--surface-0', '--surface-1', '--surface-2'] as const;
   const texts = ['--text-0', '--text-1', '--text-2'] as const;
 
@@ -77,6 +75,20 @@ describe.each(themes)('%s theme', (_name, t) => {
   });
 });
 
+describe('light-only', () => {
+  // The site must not follow the system preference. A reintroduced
+  // prefers-color-scheme block would ship an unreviewed second palette that
+  // none of the contrast assertions above cover.
+  it('declares no colour-scheme media query', () => {
+    expect(code).not.toMatch(/prefers-color-scheme/);
+  });
+
+  it('pins UA chrome to light', () => {
+    expect(code).toMatch(/color-scheme:\s*light\s*;/);
+    expect(code).not.toMatch(/color-scheme:\s*dark\s*;/);
+  });
+});
+
 describe('heatmap bins', () => {
   // Bins 1-2 take white ink, bins 3-6 take dark ink.
   const inks: Array<[string, '--bin-ink-light' | '--bin-ink-dark']> = [
@@ -89,11 +101,11 @@ describe('heatmap bins', () => {
   ];
 
   it.each(inks)('%s label ink clears AA', (bin, ink) => {
-    expect(contrast(dark[bin], dark[ink])).toBeGreaterThanOrEqual(AA_TEXT);
+    expect(contrast(t[bin], t[ink])).toBeGreaterThanOrEqual(AA_TEXT);
   });
 
   it('bins rise monotonically in luminance', () => {
-    const ls = inks.map(([bin]) => luminance(dark[bin]));
+    const ls = inks.map(([bin]) => luminance(t[bin]));
     for (let i = 1; i < ls.length; i++) {
       expect(ls[i], `bin ${i + 1} vs bin ${i}`).toBeGreaterThan(ls[i - 1]);
     }
