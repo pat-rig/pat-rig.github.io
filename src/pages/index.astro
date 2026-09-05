@@ -55,9 +55,6 @@ const byTrack = TRACKS.map((track) => ({
         </span>
         <a href="#disclaimer">Full note</a>
       </p>
-      <div class="hero__meta">
-        <span><a href="https://github.com/pat-rig">GitHub</a></span>
-      </div>
     </div>
   </section>
 
@@ -142,21 +139,6 @@ const byTrack = TRACKS.map((track) => ({
 
   .hero__note-line {
     display: block;
-  }
-
-  /*
-   * Pushed to the right edge of the text column, away from the prose, so it
-   * reads as an off-to-the-side pointer rather than the end of the note above.
-   */
-  .hero__meta {
-    margin-top: var(--space-5);
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: var(--space-4);
-    font-family: var(--font-mono);
-    font-size: var(--step--1);
-    color: var(--text-2);
   }
 
   .tracks {
@@ -266,10 +248,6 @@ const byTrack = TRACKS.map((track) => ({
     }
 
     .hero__lede {
-      margin-top: var(--space-4);
-    }
-
-    .hero__meta {
       margin-top: var(--space-4);
     }
 

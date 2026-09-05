@@ -72,9 +72,13 @@ const pageTitle = title === SITE_NAME ? title : `${title} — ${SITE_NAME}`;
       </main>
 
       <footer class="colophon">
+        {/*
+          Points at the profile, not this repo — so the wording can no longer
+          say "Source on", which promises the repository specifically.
+        */}
         <p>
-          Built with Astro. Source on <a
-            href="https://github.com/pat-rig/pat-rig.github.io">GitHub</a
+          Built with Astro. Find me on <a href="https://github.com/pat-rig"
+            >GitHub</a
           >.
         </p>
       </footer>
