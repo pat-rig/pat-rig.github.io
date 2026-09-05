@@ -1,6 +1,7 @@
 ---
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Mark from '../../components/Mark.astro';
 import { TRACKS } from '../../tracks';
 
 export async function getStaticPaths() {
@@ -60,6 +61,36 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
     <div class="post__body">
       <Content />
     </div>
+
+    {
+      post.data.paper && (
+        <aside class="citation" aria-labelledby="citation-label">
+          <Mark name={post.data.paper.mark} />
+          <div>
+            <p class="citation__label" id="citation-label">
+              Publication
+            </p>
+            <p class="citation__title">{post.data.paper.title}</p>
+            {post.data.paper.authors && (
+              <p class="citation__authors">{post.data.paper.authors}</p>
+            )}
+            <p class="citation__venue">
+              {[post.data.paper.venue, post.data.paper.year].filter(Boolean).join(' · ')}
+            </p>
+            {post.data.paper.url && (
+              <p class="citation__link">
+                <a href={post.data.paper.url}>Read the paper</a>
+              </p>
+            )}
+            {post.data.paper.talk && (
+              <p class="citation__link">
+                <a href={post.data.paper.talk}>Watch the talk</a>
+              </p>
+            )}
+          </div>
+        </aside>
+      )
+    }
   </article>
 
   {
@@ -133,6 +164,66 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
     border-left: 2px solid var(--line-strong);
     padding-left: var(--space-4);
     color: var(--text-1);
+  }
+
+  /*
+   * The reference the article is written around. Set off from the prose by a
+   * rule and the same left-hand mark the listings use, so it reads as a record
+   * rather than a closing paragraph — mono for the label and the venue, sans
+   * for the title, which is the one line meant to be read as text.
+   */
+  .citation {
+    margin-top: var(--space-8);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 3.25rem 1fr;
+    gap: var(--space-4);
+    align-items: start;
+  }
+
+  .citation__label {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text-2);
+  }
+
+  .citation__title {
+    margin-top: var(--space-2);
+    font-size: var(--step-0);
+    font-weight: 600;
+    text-wrap: pretty;
+  }
+
+  .citation__authors {
+    margin-top: var(--space-1);
+    font-size: var(--step--1);
+    color: var(--text-1);
+  }
+
+  .citation__venue {
+    margin-top: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text-2);
+  }
+
+  .citation__link {
+    margin-top: var(--space-3);
+    font-size: var(--step--1);
+  }
+
+  /* Consecutive links group together rather than reading as separate blocks. */
+  .citation__link + .citation__link {
+    margin-top: var(--space-2);
+  }
+
+  /* Matches the entry mark's narrow-screen column so the two stay in step. */
+  @media (max-width: 40rem) {
+    .citation {
+      grid-template-columns: 2.5rem 1fr;
+      gap: var(--space-3);
+    }
   }
 
   .post__back {

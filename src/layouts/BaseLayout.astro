@@ -43,10 +43,25 @@ const pageTitle = title === SITE_NAME ? title : `${title} — ${SITE_NAME}`;
       the commute islands in Phase 6 will. Re-verify this policy when the first
       island lands (P6.3) — a CSP violation fails silently for visitors.
     */}
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"
-    />
+    {/*
+      Production only. `astro dev` serves every stylesheet as an inline
+      <style> tag, which `style-src 'self'` forbids — with the meta tag
+      present in dev the whole site renders unstyled. The policy protects the
+      deployed site, and localhost is not the deployed site.
+
+      The cost: dev no longer exercises the CSP, so a violation cannot show up
+      until the built output is served. Test it with `npm run build && npm run
+      preview`, not with `npm run dev` — especially when the commute islands
+      land in P6.3, since a CSP violation fails silently for visitors.
+    */}
+    {
+      import.meta.env.PROD && (
+        <meta
+          http-equiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"
+        />
+      )
+    }
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <title>{pageTitle}</title>
     {description && <meta name="description" content={description} />}

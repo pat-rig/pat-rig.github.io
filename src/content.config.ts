@@ -3,6 +3,9 @@ import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 import { TRACK_IDS } from './tracks';
 
+/** Shared so the entry mark and the citation mark can never drift apart. */
+const MARKS = ['grid', 'distribution', 'network', 'bars', 'fork', 'lines'] as const;
+
 const blog = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/blog' }),
   schema: z.object({
@@ -18,7 +21,24 @@ const blog = defineCollection({
      */
     track: z.enum(TRACK_IDS),
     /** Chooses the data-mark drawn beside the entry. See src/components/Mark.astro. */
-    mark: z.enum(['grid', 'distribution', 'network', 'bars', 'fork', 'lines']).default('lines'),
+    mark: z.enum(MARKS).default('lines'),
+    /**
+     * The publication a post is written around, rendered as a reference block
+     * at the foot of the article. `url` is optional so a citation can go in
+     * before the proceedings link exists.
+     */
+    paper: z
+      .object({
+        title: z.string(),
+        authors: z.string().optional(),
+        venue: z.string(),
+        year: z.number().int().optional(),
+        url: z.url().optional(),
+        /** A recorded talk about the same work, listed under the paper link. */
+        talk: z.url().optional(),
+        mark: z.enum(MARKS).default('lines'),
+      })
+      .optional(),
     /** Optional short status shown in the entry meta, e.g. "collecting data". */
     status: z.string().optional(),
     /** Optional kind label shown in the entry meta, e.g. "Project", "Publication". */
