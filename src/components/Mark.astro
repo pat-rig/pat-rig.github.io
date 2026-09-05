@@ -131,10 +131,14 @@ const gridCells = [
 </span>
 
 <style>
+  /*
+   * Sized by the grid column it sits in rather than fixed, so the entry layout
+   * can shrink it on narrow screens without the mark ever having to leave the
+   * text's side. Square by aspect-ratio, not by matching width and height.
+   */
   .mark {
-    width: 3.25rem;
-    height: 3.25rem;
-    flex: none;
+    width: 100%;
+    aspect-ratio: 1;
     color: var(--text-2);
     background: var(--surface-1);
     border: 1px solid var(--line);

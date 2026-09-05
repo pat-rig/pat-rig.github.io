@@ -82,10 +82,16 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
     gap: var(--space-3);
   }
 
-  @media (max-width: 30rem) {
+  /*
+   * The mark stays beside the title on phones, shrunk rather than stacked.
+   * Stacking it above the text orphaned it — it reads as a left-hand anchor
+   * for the entry, and loses that meaning the moment it sits on its own row.
+   */
+  @media (max-width: 40rem) {
     .entry {
-      grid-template-columns: 1fr;
+      grid-template-columns: 2.5rem 1fr;
       gap: var(--space-3);
+      padding-block: var(--space-4);
     }
   }
 </style>

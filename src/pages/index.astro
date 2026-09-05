@@ -24,12 +24,19 @@ const byTrack = TRACKS.map((track) => ({
   description="Machine learning, data science and AI in business, through the lens of projects built over the years."
 >
   <section class="hero">
+    {/*
+      On phones the portrait spans the full column as a 3:2 crop anchored to the
+      top of the original, so the framing keeps its headroom. Above 40rem it
+      returns to a side column at its native 4:5 ratio. `sizes` mirrors those
+      breakpoints so the browser picks the right variant; 720w is effectively
+      the source width, which is what a 2x phone needs at full column width.
+    */}
     <Image
       class="hero__portrait"
       src={portrait}
       alt={SITE_NAME}
       widths={[240, 480, 720]}
-      sizes="(max-width: 30rem) 11rem, (max-width: 55rem) 10rem, 15rem"
+      sizes="(max-width: 40rem) calc(100vw - 2rem), (max-width: 55rem) 10rem, 15rem"
       loading="eager"
     />
     <div>
@@ -229,13 +236,44 @@ const byTrack = TRACKS.map((track) => ({
     }
   }
 
-  @media (max-width: 30rem) {
+  /*
+   * Phones. A 10rem portrait beside the text leaves both too narrow, so the
+   * hero becomes a single column and the portrait spans it as a 3:2 crop
+   * anchored to the top of the frame. Spacing is tightened throughout so the
+   * headline is reachable without scrolling past a screen of nothing.
+   */
+  @media (max-width: 40rem) {
     .hero {
       grid-template-columns: 1fr;
+      gap: 0;
+      padding-block: var(--space-5) var(--space-6);
     }
 
     .hero__portrait {
-      max-width: 11rem;
+      aspect-ratio: 3 / 2;
+      object-fit: cover;
+      object-position: 50% 0%;
+      margin-bottom: var(--space-4);
+    }
+
+    .hero__kicker {
+      margin-bottom: var(--space-2);
+    }
+
+    .hero__lede {
+      margin-top: var(--space-4);
+    }
+
+    .hero__meta {
+      margin-top: var(--space-4);
+    }
+
+    .track {
+      padding-block: var(--space-5) var(--space-6);
+    }
+
+    .track__head {
+      margin-bottom: var(--space-4);
     }
   }
 </style>
