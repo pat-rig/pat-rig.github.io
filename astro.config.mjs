@@ -14,6 +14,16 @@ export default defineConfig({
   site: 'https://pat-rig.github.io',
   output: 'static',
   trailingSlash: 'always',
+  /*
+   * `/writing/` was a real page until the two tracks got their own listings.
+   * Anyone holding a cached copy of the old landing page — or a bookmark —
+   * would otherwise hit a 404, so the old URL is kept alive as a redirect
+   * rather than deleted outright. Static output renders these as small
+   * meta-refresh pages.
+   */
+  redirects: {
+    '/writing': '/',
+  },
   build: {
     // Emit `/blog/post/index.html` rather than `/blog/post.html`, which is what
     // Pages needs for extensionless URLs to resolve.
