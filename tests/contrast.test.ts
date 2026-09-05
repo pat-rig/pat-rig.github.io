@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 /*
- * Guards the accessibility floors agreed in docs/design.md §4.3 and §6.1.
+ * Guards the accessibility floors agreed in the design system document.
  *
  * These ratios were computed by hand during the P1.2 critique and several of
  * the first-draft values failed. This test recomputes them from the real
@@ -77,8 +77,8 @@ describe.each(themes)('%s theme', (_name, t) => {
   });
 });
 
-describe('heatmap bins (docs/design.md §6.1)', () => {
-  // Bins 1-2 take white ink, bins 3-6 take dark ink. See the table in §6.1.
+describe('heatmap bins', () => {
+  // Bins 1-2 take white ink, bins 3-6 take dark ink.
   const inks: Array<[string, '--bin-ink-light' | '--bin-ink-dark']> = [
     ['--bin-1', '--bin-ink-light'],
     ['--bin-2', '--bin-ink-light'],

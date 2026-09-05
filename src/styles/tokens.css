@@ -1,6 +1,8 @@
 /*
- * Design tokens. The source of truth for these values is docs/design.md.
- * Do not change a value here without changing it there, and vice versa.
+ * Design tokens. The source of truth for these values is the design system
+ * document, which lives in the private planning notes (not in this public
+ * repo). Do not change a value here without changing it there, and vice versa.
+ * The contrast ratios below are enforced by tests/contrast.test.ts.
  */
 
 :root {
@@ -49,7 +51,8 @@
 
   /*
    * Heatmap bins — truncated viridis, 6 discrete steps (§6.1).
-   * PROVISIONAL: see the status note in docs/design.md §6.
+   * PROVISIONAL: the visualisation concept is not settled. See the private
+   * planning notes before building on these.
    * Kept here because the legend and any CSS fallback need them.
    */
   --bin-1: #3b528b;

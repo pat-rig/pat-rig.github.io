@@ -1,5 +1,6 @@
 /*
- * Base styles. Implements docs/design.md.
+ * Base styles. Implements the design system (documented in the private
+ * planning notes).
  * No box-shadows anywhere (§5) — depth is a surface step plus a 1px line.
  */
 
