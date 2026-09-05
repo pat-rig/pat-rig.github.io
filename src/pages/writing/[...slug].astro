@@ -1,6 +1,7 @@
 ---
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { TRACKS } from '../../tracks';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -16,6 +17,9 @@ interface Props {
 
 const { post } = Astro.props;
 const { Content } = await render(post);
+
+// Send readers back to the track this post belongs to, not a generic index.
+const track = TRACKS.find((t) => t.id === post.data.track);
 
 const dateFormat = new Intl.DateTimeFormat('en-GB', {
   year: 'numeric',
@@ -58,7 +62,13 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
     </div>
   </article>
 
-  <p class="post__back"><a href="/writing/">Back to writing</a></p>
+  {
+    track && (
+      <p class="post__back">
+        <a href={`/${track.id}/`}>Back to {track.title}</a>
+      </p>
+    )
+  }
 </BaseLayout>
 
 <style>

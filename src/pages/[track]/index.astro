@@ -1,0 +1,107 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Entry from '../../components/Entry.astro';
+import { TRACKS, type Track } from '../../tracks';
+
+/**
+ * One listing page per track: /data-science/ and /business/. Each shows only
+ * its own posts, headed by the track's own title — a shared "Writing" page
+ * listing both defeats the point of splitting the site into tracks.
+ */
+export async function getStaticPaths() {
+  return TRACKS.map((track) => ({
+    params: { track: track.id },
+    props: { track },
+  }));
+}
+
+interface Props {
+  track: Track;
+}
+
+const { track } = Astro.props;
+
+const posts = (await getCollection('blog'))
+  .filter((post) => post.data.track === track.id)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const other = TRACKS.find((t) => t.id !== track.id);
+---
+
+<BaseLayout title={track.title} description={track.description}>
+  <section class="intro">
+    <p class="intro__kicker">{track.kicker}</p>
+    <h1>{track.title}</h1>
+    <p class="intro__lede">{track.description}</p>
+  </section>
+
+  {
+    posts.length > 0 ? (
+      <ul class="entries" role="list">
+        {posts.map((post) => (
+          <Entry post={post} prominent />
+        ))}
+      </ul>
+    ) : (
+      <p class="empty">Nothing published here yet.</p>
+    )
+  }
+
+  {
+    other && (
+      <p class="crosslink">
+        Looking for the other track? <a href={`/${other.id}/`}>{other.title}</a>
+      </p>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .intro {
+    max-width: var(--measure);
+    padding-block: var(--space-6) var(--space-7);
+    border-bottom: 2px solid var(--text-0);
+    margin-bottom: var(--space-1);
+  }
+
+  .intro__kicker {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text-2);
+    margin-bottom: var(--space-2);
+  }
+
+  .intro__lede {
+    margin-top: var(--space-4);
+    font-size: var(--step-1);
+    color: var(--text-1);
+  }
+
+  .entries {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    max-width: 52rem;
+  }
+
+  .empty {
+    color: var(--text-1);
+    padding-top: var(--space-5);
+  }
+
+  .crosslink {
+    margin-top: var(--space-8);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--line);
+    font-size: var(--step--1);
+    color: var(--text-1);
+  }
+
+  @media (max-width: 40rem) {
+    .intro {
+      padding-block: var(--space-5) var(--space-5);
+    }
+  }
+</style>
