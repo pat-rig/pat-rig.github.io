@@ -17,7 +17,18 @@ interface Props {
 }
 
 const { post } = Astro.props;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
+
+/*
+ * Only h2 and h3 carry an article's structure — h4 and below are detail, and
+ * listing them turns the aside into a second article. Astro has already given
+ * every heading an id, so an entry needs nothing but a link.
+ *
+ * Below three headings there is nothing to navigate: the shape of the page is
+ * visible from one scroll, and a two-item list is furniture.
+ */
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const showToc = toc.length >= 3;
 
 // Send readers back to the track this post belongs to, not a generic index.
 const track = TRACKS.find((t) => t.id === post.data.track);
@@ -31,80 +42,180 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
 ---
 
 <BaseLayout title={post.data.title} description={post.data.summary}>
-  <article class="post">
-    <header class="post__head">
-      <h1>{post.data.title}</h1>
-      <div class="post__meta">
-        <time datetime={post.data.date.toISOString()}>
-          {dateFormat.format(post.data.date)}
-        </time>
+  <div class:list={['layout', showToc && 'layout--toc']}>
+    <article class="post">
+      <header class="post__head">
+        <h1>{post.data.title}</h1>
+        <div class="post__meta">
+          <time datetime={post.data.date.toISOString()}>
+            {dateFormat.format(post.data.date)}
+          </time>
+          {
+            post.data.tags.length > 0 && (
+              <ul class="post__tags" role="list">
+                <li class="visually-hidden">Tags:</li>
+                {post.data.tags.map((tag) => (
+                  <li>{tag}</li>
+                ))}
+              </ul>
+            )
+          }
+        </div>
         {
-          post.data.tags.length > 0 && (
-            <ul class="post__tags" role="list">
-              <li class="visually-hidden">Tags:</li>
-              {post.data.tags.map((tag) => (
-                <li>{tag}</li>
-              ))}
-            </ul>
+          post.data.repo && (
+            <p class="post__repo">
+              <a href={post.data.repo}>Source repository</a>
+            </p>
           )
         }
+      </header>
+
+      <div class="post__body">
+        <Content />
       </div>
+
       {
-        post.data.repo && (
-          <p class="post__repo">
-            <a href={post.data.repo}>Source repository</a>
-          </p>
+        post.data.paper && (
+          <aside class="citation" aria-labelledby="citation-label">
+            <Mark name={post.data.paper.mark} />
+            <div>
+              <p class="citation__label" id="citation-label">
+                Publication
+              </p>
+              <p class="citation__title">{post.data.paper.title}</p>
+              {post.data.paper.authors && (
+                <p class="citation__authors">{post.data.paper.authors}</p>
+              )}
+              <p class="citation__venue">
+                {[post.data.paper.venue, post.data.paper.year].filter(Boolean).join(' · ')}
+              </p>
+              {post.data.paper.url && (
+                <p class="citation__link">
+                  <a href={post.data.paper.url}>Read the paper</a>
+                </p>
+              )}
+              {post.data.paper.talk && (
+                <p class="citation__link">
+                  <a href={post.data.paper.talk}>Watch the talk</a>
+                </p>
+              )}
+            </div>
+          </aside>
         )
       }
-    </header>
-
-    <div class="post__body">
-      <Content />
-    </div>
+    </article>
 
     {
-      post.data.paper && (
-        <aside class="citation" aria-labelledby="citation-label">
-          <Mark name={post.data.paper.mark} />
-          <div>
-            <p class="citation__label" id="citation-label">
-              Publication
-            </p>
-            <p class="citation__title">{post.data.paper.title}</p>
-            {post.data.paper.authors && (
-              <p class="citation__authors">{post.data.paper.authors}</p>
-            )}
-            <p class="citation__venue">
-              {[post.data.paper.venue, post.data.paper.year].filter(Boolean).join(' · ')}
-            </p>
-            {post.data.paper.url && (
-              <p class="citation__link">
-                <a href={post.data.paper.url}>Read the paper</a>
-              </p>
-            )}
-            {post.data.paper.talk && (
-              <p class="citation__link">
-                <a href={post.data.paper.talk}>Watch the talk</a>
-              </p>
-            )}
-          </div>
-        </aside>
+      track && (
+        <p class="post__back">
+          <a href={`/${track.id}/`}>Back to {track.title}</a>
+        </p>
       )
     }
-  </article>
 
-  {
-    track && (
-      <p class="post__back">
-        <a href={`/${track.id}/`}>Back to {track.title}</a>
-      </p>
-    )
-  }
+    {
+      showToc && (
+        <nav class="toc" aria-labelledby="toc-label">
+          <p class="toc__label" id="toc-label">
+            Contents
+          </p>
+          <ul class="toc__list" role="list">
+            {toc.map((heading) => (
+              <li class:list={['toc__item', heading.depth === 3 && 'toc__item--sub']}>
+                <a href={`#${heading.slug}`}>{heading.text}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )
+    }
+  </div>
 </BaseLayout>
 
 <style>
   .post {
     max-width: var(--measure);
+  }
+
+  /*
+   * Contents rail. Desktop only, by design: it lives in space that only exists
+   * once the viewport is wider than the reading measure, and on a phone a list
+   * of four links above the article is worse than no list at all. Below the
+   * breakpoint the whole nav is simply not painted, and the page is byte-for-
+   * byte what it was before.
+   *
+   * The breakpoint is set by arithmetic, not taste: the shell leaves about
+   * 62rem of content at a 66rem viewport, and the measure plus the gap plus
+   * the rail asks for about 55rem.
+   */
+  @media (min-width: 66rem) {
+    .layout--toc {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 14rem;
+      column-gap: var(--space-8);
+      /*
+       * Not `stretch`: a rail stretched to the article's height has nowhere to
+       * travel, and sticky would do nothing. Sized to its content, it sticks
+       * against the grid container instead — which is as tall as the article.
+       */
+      align-items: start;
+    }
+
+    /* The article and its back-link stay one column; the rail sits beside them. */
+    .layout--toc .post,
+    .layout--toc .post__back {
+      grid-column: 1;
+    }
+
+    .layout--toc .toc {
+      grid-column: 2;
+      grid-row: 1;
+      position: sticky;
+      top: var(--space-6);
+    }
+  }
+
+  .toc {
+    display: none;
+  }
+
+  @media (min-width: 66rem) {
+    .toc {
+      display: block;
+      /* Aligns the rail's first line with the article title's cap height. */
+      padding-top: var(--space-2);
+      border-left: 1px solid var(--line);
+      padding-left: var(--space-5);
+      font-size: var(--step--1);
+    }
+  }
+
+  .toc__label {
+    font-family: var(--font-mono);
+    color: var(--text-2);
+  }
+
+  .toc__list {
+    list-style: none;
+    padding: 0;
+    margin-top: var(--space-4);
+  }
+
+  .toc__item + .toc__item {
+    margin-top: var(--space-3);
+  }
+
+  .toc__item--sub {
+    padding-left: var(--space-4);
+  }
+
+  .toc__item a {
+    color: var(--text-1);
+    text-wrap: pretty;
+  }
+
+  .toc__item a:hover {
+    color: var(--text-0);
   }
 
   .post__head {
@@ -149,6 +260,12 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
 
   .post__body :global(h3) {
     margin-top: var(--space-6);
+  }
+
+  /* Jumping from the rail should not land a heading flush against the top. */
+  .post__body :global(h2),
+  .post__body :global(h3) {
+    scroll-margin-top: var(--space-6);
   }
 
   .post__body :global(ul),

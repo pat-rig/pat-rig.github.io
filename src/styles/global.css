@@ -16,6 +16,11 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  /*
+   * For the contents rail's in-page jumps. Disabled outright — not shortened —
+   * under reduced motion, by the block at the foot of this file.
+   */
+  scroll-behavior: smooth;
 }
 
 body {
