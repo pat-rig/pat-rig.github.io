@@ -29,6 +29,25 @@ const pageTitle = title === siteName ? title : `${title} — ${siteName}`;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/*
+      GitHub Pages serves a fixed set of response headers and offers no way to
+      add our own, so the policy has to travel in the document. Two caveats
+      that are properties of `<meta>` CSP, not oversights:
+        - `frame-ancestors` is ignored here; clickjacking protection needs a
+          real header. Deferred to Phase 9 (`staticwebapp.config.json`) if we
+          ever move to Azure.
+        - `X-Content-Type-Options` cannot be expressed as a meta tag at all.
+      HTTPS is already enforced by Pages itself.
+
+      `script-src 'self'` rather than 'none': the site ships zero JS today, but
+      the commute islands in Phase 6 will. Re-verify this policy when the first
+      island lands (P6.3) — a CSP violation fails silently for visitors.
+    */}
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"
+    />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <title>{pageTitle}</title>
     {description && <meta name="description" content={description} />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />

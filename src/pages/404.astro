@@ -1,0 +1,38 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Page not found" description="No page exists at this address.">
+  <section class="notfound">
+    <p class="notfound__code">404</p>
+    <h1>No page at this address</h1>
+    <p class="notfound__body">
+      The link may be out of date, or the page may have been renamed. Nothing is
+      broken on your end.
+    </p>
+    <p><a href="/">Back to writing</a></p>
+  </section>
+</BaseLayout>
+
+<style>
+  .notfound {
+    max-width: var(--measure);
+    padding-block: var(--space-7) var(--space-9);
+  }
+
+  /* The one place a large figure appears outside the heatmap. It is set in
+     mono at --step-data so it reads as a status code on a board, not as
+     decoration. */
+  .notfound__code {
+    font-family: var(--font-mono);
+    font-size: var(--step-data);
+    line-height: var(--leading-flat);
+    color: var(--text-2);
+    margin-bottom: var(--space-4);
+  }
+
+  .notfound__body {
+    margin-block: var(--space-4) var(--space-5);
+    color: var(--text-1);
+  }
+</style>

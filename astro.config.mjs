@@ -18,5 +18,11 @@ export default defineConfig({
     // Emit `/blog/post/index.html` rather than `/blog/post.html`, which is what
     // Pages needs for extensionless URLs to resolve.
     format: 'directory',
+    /*
+     * Never inline stylesheets. Astro's default ('auto') inlines small ones,
+     * which would force `style-src 'unsafe-inline'` in the CSP. Keeping styles
+     * external costs one cached request and buys a materially stricter policy.
+     */
+    inlineStylesheets: 'never',
   },
 });
