@@ -1,17 +1,138 @@
 ---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
 
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+
+const dateFormat = new Intl.DateTimeFormat('en-GB', {
+  year: 'numeric',
+  month: 'short',
+  day: '2-digit',
+  timeZone: 'UTC',
+});
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout
+  title="Patrick"
+  description="Writing about data, traffic time, and things built to measure them."
+>
+  <section class="intro">
+    <h1>Writing</h1>
+    <p class="intro__lede">
+      Notes on data, measurement, and things built to find out how long things
+      actually take.
+    </p>
+  </section>
+
+  <ol class="board" role="list">
+    {
+      posts.map((post) => (
+        <li class="board__row">
+          <time class="board__date" datetime={post.data.date.toISOString()}>
+            {dateFormat.format(post.data.date)}
+          </time>
+          <div class="board__body">
+            <h2 class="board__title">
+              <a href={`/blog/${post.id}/`}>{post.data.title}</a>
+            </h2>
+            <p class="board__summary">{post.data.summary}</p>
+            {post.data.tags.length > 0 && (
+              <ul class="board__tags" role="list">
+                <li class="visually-hidden">Tags:</li>
+                {post.data.tags.map((tag) => (
+                  <li>{tag}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+
+  {posts.length === 0 && <p class="empty">Nothing published yet.</p>}
+</BaseLayout>
+
+<style>
+  .intro {
+    max-width: var(--measure);
+    margin-bottom: var(--space-8);
+  }
+
+  .intro__lede {
+    margin-top: var(--space-4);
+    font-size: var(--step-1);
+    color: var(--text-1);
+    max-width: var(--measure);
+  }
+
+  /*
+   * The post list as a board of departures: a fixed date column in tabular
+   * mono, then the entry. Rows are separated by rules, not cards (§2, §5).
+   */
+  .board {
+    list-style: none;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .board__row {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr;
+    gap: var(--space-2) var(--space-5);
+    padding-block: var(--space-5);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .board__date {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text-2);
+    padding-top: 0.35em;
+    white-space: nowrap;
+  }
+
+  .board__title {
+    font-size: var(--step-1);
+  }
+
+  .board__title a {
+    text-decoration-color: var(--line-strong);
+  }
+
+  .board__summary {
+    margin-top: var(--space-2);
+    color: var(--text-1);
+    max-width: var(--measure);
+  }
+
+  .board__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    list-style: none;
+    padding: 0;
+    margin-top: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text-2);
+  }
+
+  .empty {
+    color: var(--text-1);
+  }
+
+  /* At 360px the date column becomes a line above the entry, not a column. */
+  @media (max-width: 40rem) {
+    .board__row {
+      grid-template-columns: 1fr;
+      gap: var(--space-2);
+    }
+
+    .board__date {
+      padding-top: 0;
+    }
+  }
+</style>

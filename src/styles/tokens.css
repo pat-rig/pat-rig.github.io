@@ -1,0 +1,94 @@
+/*
+ * Design tokens. The source of truth for these values is docs/design.md.
+ * Do not change a value here without changing it there, and vice versa.
+ */
+
+:root {
+  /* Type families (§3) */
+  --font-sans:
+    'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Type scale — 1.25 major third (§3) */
+  --step--1: 0.8125rem;
+  --step-0: 1.0625rem;
+  --step-1: 1.3125rem;
+  --step-2: 1.625rem;
+  --step-3: clamp(2rem, 1.6rem + 1.8vw, 2.5rem);
+  --step-data: clamp(2.5rem, 2rem + 2.5vw, 3.5rem);
+
+  --leading-body: 1.6;
+  --leading-tight: 1.15;
+  --leading-flat: 1;
+
+  --measure: 66ch;
+
+  /* Space — 4px base (§5) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+
+  /* Layout (§5) */
+  --width-prose: 42rem;
+  --width-wide: 70rem;
+  --gutter: clamp(1rem, 4vw, 2rem);
+  --radius-0: 0;
+  --radius-1: 2px;
+
+  /* Motion (§8) */
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /*
+   * Heatmap bins — truncated viridis, 6 discrete steps (§6.1).
+   * PROVISIONAL: see the status note in docs/design.md §6.
+   * Kept here because the legend and any CSS fallback need them.
+   */
+  --bin-1: #3b528b;
+  --bin-2: #31688e;
+  --bin-3: #21918c;
+  --bin-4: #27ad81;
+  --bin-5: #5ec962;
+  --bin-6: #fde725;
+  --bin-ink-light: #ffffff;
+  --bin-ink-dark: #0d0f12;
+
+  /* Colour — dark is the designed default (§4.1) */
+  --surface-0: #0d0f12;
+  --surface-1: #14171c;
+  --surface-2: #1d222a;
+  --line: #2a313b;
+  --line-strong: #626c79;
+  --text-0: #e7eaee;
+  --text-1: #a6aebb;
+  --text-2: #8c95a3;
+  --focus: #fde725;
+  --board: #0d0f12;
+
+  color-scheme: dark;
+}
+
+/* Light (§4.2). The board deliberately stays dark in both themes. */
+@media (prefers-color-scheme: light) {
+  :root {
+    --surface-0: #fcfcfd;
+    --surface-1: #f2f4f7;
+    --surface-2: #e6e9ef;
+    --line: #d3d8e0;
+    --line-strong: #7a8391;
+    --text-0: #14171c;
+    --text-1: #4a5260;
+    --text-2: #5c6473;
+    --focus: #14171c;
+    --board: #0d0f12;
+
+    color-scheme: light;
+  }
+}
