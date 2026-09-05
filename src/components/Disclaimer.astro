@@ -8,31 +8,43 @@
 ---
 
 <section class="disclaimer" id="disclaimer" aria-labelledby="disclaimer-title">
-  <h2 class="disclaimer__title" id="disclaimer-title">A note on what you read here</h2>
-  <p>
-    Everything on this site is written in a personal capacity. The opinions, analyses and
-    conclusions are my own, formed in my own time, and do not represent the positions of my
-    employer or of any organisation I work with. Nothing here should be read as a statement on
-    their behalf.
-  </p>
-  <p>
-    Academic publications are the one exception. Those were carried out and published under the
-    institute named on each paper, and that work stands on its own terms — it is listed here for
-    reference, with any commentary I add around it being, again, my own view rather than the
-    institute’s.
-  </p>
+  <div class="disclaimer__inner">
+    <h2 class="disclaimer__title" id="disclaimer-title">A note on what you read here</h2>
+    <p>
+      Everything on this site is written in a personal capacity. The opinions, analyses and
+      conclusions are my own, formed in my own time, and do not represent the positions of my
+      employer or of any organisation I work with. Nothing here should be read as a statement on
+      their behalf.
+    </p>
+    <p>
+      Academic publications are the one exception. Those were carried out and published under the
+      institute named on each paper, and that work stands on its own terms — it is listed here for
+      reference, with any commentary I add around it being, again, my own view rather than the
+      institute’s.
+    </p>
+  </div>
 </section>
 
 <style>
+  /*
+   * The divider spans the full width, matching the other section dividers on
+   * the landing page; the text sits in a centered, measure-width column
+   * inside it — a centered block, not centered text, since centering
+   * multi-line prose itself would ragged the line ends.
+   */
   .disclaimer {
-    max-width: var(--measure);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
     padding-block: var(--space-6);
     border-top: 1px solid var(--line);
     font-size: var(--step--1);
     color: var(--text-1);
+  }
+
+  .disclaimer__inner {
+    max-width: var(--measure);
+    margin-inline: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
   }
 
   .disclaimer__title {
@@ -41,5 +53,6 @@
     font-weight: 500;
     color: var(--text-0);
     margin-bottom: var(--space-1);
+    text-align: center;
   }
 </style>
