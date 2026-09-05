@@ -144,10 +144,15 @@ const byTrack = TRACKS.map((track) => ({
     display: block;
   }
 
+  /*
+   * Pushed to the right edge of the text column, away from the prose, so it
+   * reads as an off-to-the-side pointer rather than the end of the note above.
+   */
   .hero__meta {
     margin-top: var(--space-5);
     display: flex;
     flex-wrap: wrap;
+    justify-content: flex-end;
     gap: var(--space-4);
     font-family: var(--font-mono);
     font-size: var(--step--1);
