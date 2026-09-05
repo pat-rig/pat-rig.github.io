@@ -22,7 +22,7 @@ export const TRACKS: readonly Track[] = [
   {
     id: 'data-science',
     kicker: 'in depth',
-    title: 'Data science & research',
+    title: 'Machine Learning & Data Science',
     description: 'Projects, publications and research ideas. Longer, with the method shown.',
     moreLabel: 'All data science work',
   },
