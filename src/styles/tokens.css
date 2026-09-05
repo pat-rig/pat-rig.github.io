@@ -79,18 +79,28 @@
   color-scheme: dark;
 }
 
-/* Light (§4.2). The board deliberately stays dark in both themes. */
+/*
+ * Light (§4.2). The board deliberately stays dark in both themes.
+ *
+ * A warm cream rather than a cool near-white — decided 2026-09-05, after
+ * Patrick reacted to a set of mocked-up options. This is deliberately close to
+ * a look docs/design.md's anti-pattern list names as one to avoid (see the
+ * note there); Patrick chose it anyway, on taste, over that concern. Every
+ * ratio below is verified against the WCAG floors in tests/contrast.test.ts —
+ * `line-strong` in particular had to be darkened from the first draft, which
+ * failed the 3:1 non-text minimum.
+ */
 @media (prefers-color-scheme: light) {
   :root {
-    --surface-0: #fcfcfd;
-    --surface-1: #f2f4f7;
-    --surface-2: #e6e9ef;
-    --line: #d3d8e0;
-    --line-strong: #7a8391;
-    --text-0: #14171c;
-    --text-1: #4a5260;
-    --text-2: #5c6473;
-    --focus: #14171c;
+    --surface-0: #f4f1ea;
+    --surface-1: #ece7dc;
+    --surface-2: #e1dacb;
+    --line: #d3c9b4;
+    --line-strong: #7d7157;
+    --text-0: #1f1b14;
+    --text-1: #55503f;
+    --text-2: #645d47;
+    --focus: #1f1b14;
     --board: #0d0f12;
 
     color-scheme: light;
