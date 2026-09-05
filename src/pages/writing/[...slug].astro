@@ -167,6 +167,210 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
   }
 
   /*
+   * A collapsible aside — the maths of a section, folded away by default so the
+   * argument reads straight through for anyone who does not want it.
+   *
+   * `<details>` and nothing else: the disclosure behaviour is native, so this
+   * works with the site's `script-src 'self'` and zero JavaScript, and
+   * find-in-page still opens the fold to reach what is inside it.
+   */
+  .post__body :global(details.formal) {
+    margin-block: var(--space-6);
+  }
+
+  .post__body :global(details.formal > summary) {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    width: fit-content;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text-1);
+    /* Both spellings are needed: WebKit still ships the pseudo-element. */
+    list-style: none;
+  }
+
+  .post__body :global(details.formal > summary::-webkit-details-marker) {
+    display: none;
+  }
+
+  /*
+   * The site has no icon set and no colour accents, so the affordance is a
+   * mono +/− — the same character pair in the same face as the label, which is
+   * also why it does not shift the text when it flips.
+   */
+  .post__body :global(details.formal > summary::before) {
+    content: '+';
+    color: var(--text-2);
+  }
+
+  .post__body :global(details.formal[open] > summary::before) {
+    content: '\2212';
+  }
+
+  .post__body :global(details.formal > summary:hover) {
+    color: var(--text-0);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+    text-decoration-color: var(--line-strong);
+  }
+
+  /*
+   * The prose rhythm above is set on `.post__body`'s direct children only, and
+   * nothing inside the fold or inside a definition is one. Restate it here —
+   * tighter within a definition, where the statement and its equation are one
+   * thought rather than two.
+   */
+  .post__body :global(details.formal > * + *) {
+    margin-top: var(--space-5);
+  }
+
+  .post__body :global(details.formal > summary + *) {
+    margin-top: var(--space-6);
+  }
+
+  .post__body :global(.def > * + *) {
+    margin-top: var(--space-4);
+  }
+
+  /*
+   * Theorem environment. A definition is set off from the prose the way this
+   * site sets off anything else: a hairline above and below and room to
+   * breathe. No box, no tint, no left bar — a left bar is the blockquote's
+   * job, and a definition is not a quotation.
+   *
+   * The run-in "**Definition n (Name).**" label is written in the markdown
+   * rather than generated, so the numbering is visible where the prose is
+   * edited and cannot silently renumber itself.
+   */
+  .post__body :global(.def) {
+    margin-block: var(--space-6);
+    padding-block: var(--space-5);
+    border-block: 1px solid var(--line);
+  }
+
+  /* The rules already separate it; the paragraph gap would double the top. */
+  .post__body :global(.def > *:first-child) {
+    margin-top: 0;
+  }
+
+  /*
+   * The figure sits directly on the page ground — no frame, no fill, no
+   * surface step. The marks beside listing entries get a bordered plate
+   * because they are labels; this is a reading of data, and a box around it
+   * would read as a widget pasted into the article.
+   */
+  .post__body :global(.def__figure) {
+    margin-top: var(--space-6);
+    margin-inline: auto;
+    /* Wider than this and it stops reading as a diagram beside an argument. */
+    max-width: 20rem;
+  }
+
+  .post__body :global(.def__figure figcaption) {
+    margin-top: var(--space-3);
+    font-size: var(--step--1);
+    line-height: 1.45;
+    color: var(--text-2);
+    text-wrap: pretty;
+  }
+
+  .post__body :global(.reliability) {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* Structure the eye should read past: the frame of reference, not the data. */
+  .post__body :global(.rd-axis line) {
+    stroke: var(--line-strong);
+    stroke-width: 1;
+  }
+
+  .post__body :global(.rd-diagonal) {
+    stroke: var(--line-strong);
+    stroke-width: 1;
+    stroke-dasharray: 4 4;
+  }
+
+  /* The measured curve is the one thing drawn at full text weight. */
+  .post__body :global(.rd-curve) {
+    fill: none;
+    stroke: var(--text-0);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Filled with the page ground so each bin punches through the line. */
+  .post__body :global(.rd-point circle) {
+    fill: var(--surface-0);
+    stroke: var(--text-0);
+    stroke-width: 2;
+  }
+
+  .post__body :global(.rd-gap line) {
+    stroke: var(--text-1);
+    stroke-width: 1;
+  }
+
+  /*
+   * Sizes are in viewBox units, not screen pixels. The 300-unit square is drawn
+   * at roughly 320px, so these land near their face value — but they scale with
+   * the figure, so changing its max-width changes the label size too.
+   */
+  .post__body :global(.reliability text) {
+    font-family: var(--font-mono);
+    fill: var(--text-2);
+    font-size: 11px;
+  }
+
+  .post__body :global(.rd-gap-label) {
+    fill: var(--text-1);
+  }
+
+  .post__body :global(.rd-region) {
+    font-size: 10px;
+  }
+
+  .post__body :global(.rd-tick) {
+    font-size: 10px;
+  }
+
+  .post__body :global(.rd-tick text) {
+    text-anchor: middle;
+  }
+
+  .post__body :global(.rd-tick--y) {
+    text-anchor: end;
+  }
+
+  .post__body :global(.rd-axis-label) {
+    fill: var(--text-1);
+    text-anchor: middle;
+  }
+
+  /*
+   * Maths is rendered to MathML at build time (see astro.config.mjs). Display
+   * equations arrive as an inline `<span class="katex">` around a
+   * `<math display="block">`, so the span has to be told it is a block before
+   * the centring below can apply. A long equation scrolls inside its own line
+   * rather than pushing the page sideways.
+   */
+  .post__body :global(.katex:has(math[display='block'])) {
+    display: block;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-block: var(--space-2);
+  }
+
+  .post__body :global(math[display='block']) {
+    margin-inline: auto;
+  }
+
+  /*
    * The reference the article is written around. Set off from the prose by a
    * rule and the same left-hand mark the listings use, so it reads as a record
    * rather than a closing paragraph — mono for the label and the venue, sans

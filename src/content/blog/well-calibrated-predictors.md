@@ -64,6 +64,82 @@ Everything below it is overconfidence, everything above it is underconfidence.
 Modern deep networks sit below the line. They are, as a rule, overconfident —
 and more so as they get larger and are trained longer.
 
+<details class="formal">
+<summary>Formal perspective</summary>
+
+In formal terms, all of this rests on a single conditional statement.
+
+<div class="def">
+
+**Definition 1 (Calibration).** Let $X$ be an input with true label $Y$, let
+$\hat Y$ be the class the model predicts for it, and let $\hat p \in [0,1]$ be
+the confidence the model reports for that prediction. Write
+
+$$
+\operatorname{acc}(p) \;=\; \mathbb{P}\bigl(\hat Y = Y \,\big|\, \hat p = p\bigr)
+$$
+
+for the accuracy among all cases the model called with confidence $p$. The
+model is **perfectly calibrated** if
+
+$$
+\operatorname{acc}(p) = p \qquad \text{for every } p \in [0,1].
+$$
+
+</div>
+
+Perfect calibration is a limit case. What one actually needs is a number for
+how far a given model is from it — and the strictest such number is the largest
+gap anywhere on the confidence scale.
+
+<div class="def">
+
+**Definition 2 (Maximum calibration error).** The MCE of a model is
+
+$$
+\mathrm{MCE} \;=\; \max_{p \in [0,1]} \bigl|\operatorname{acc}(p) - p\bigr|.
+$$
+
+<figure class="def__figure">
+<svg class="reliability" viewBox="0 0 300 300" role="img" aria-labelledby="rd-title rd-desc">
+<title id="rd-title">Reliability diagram of an over-confident model</title>
+<desc id="rd-desc">Reported confidence on the horizontal axis against observed accuracy on the vertical axis. A dashed diagonal marks perfect calibration. The model's binned curve runs below that diagonal across the whole range, which is the signature of over-confidence, and the largest vertical distance between the two is marked as the maximum calibration error.</desc>
+<g class="rd-axis"><line x1="44" y1="260" x2="290" y2="260" /><line x1="44" y1="14" x2="44" y2="260" /></g>
+<line class="rd-diagonal" x1="44" y1="260" x2="284" y2="20" />
+<text class="rd-region" x="54" y="118">under-confident</text>
+<text class="rd-region" x="150" y="246">over-confident</text>
+<g class="rd-gap"><line x1="212" y1="92" x2="212" y2="140" /><line x1="206" y1="92" x2="218" y2="92" /><line x1="206" y1="140" x2="218" y2="140" /></g>
+<text class="rd-gap-label" x="228" y="123">MCE</text>
+<polyline class="rd-curve" points="68,245.6 116,212 164,173.6 212,140 260,87.2" />
+<g class="rd-point"><circle cx="68" cy="245.6" r="3.6" /><circle cx="116" cy="212" r="3.6" /><circle cx="164" cy="173.6" r="3.6" /><circle cx="212" cy="140" r="3.6" /><circle cx="260" cy="87.2" r="3.6" /></g>
+<g class="rd-tick"><text x="44" y="278">0</text><text x="284" y="278">1</text><text class="rd-tick--y" x="36" y="26">1</text></g>
+<text class="rd-axis-label" x="167" y="293">confidence</text>
+<text class="rd-axis-label" x="16" y="137" transform="rotate(-90 16 137)">accuracy</text>
+</svg>
+<figcaption>The MCE is the largest vertical distance from the diagonal — here at the fourth bin, where the model claims 0.7 and delivers 0.5.</figcaption>
+</figure>
+</div>
+
+In practice $\operatorname{acc}(p)$ is not observable: there are rarely two
+predictions carrying exactly the same confidence. So it is estimated by
+binning — partition the predictions into $M$ bins $B_1, \dots, B_M$ by reported
+confidence and take
+
+$$
+\mathrm{MCE}_M \;=\; \max_{m \le M} \bigl|\operatorname{acc}(B_m) - \operatorname{conf}(B_m)\bigr|,
+$$
+
+where $\operatorname{conf}(B_m)$ is the mean confidence inside bin $m$. That is
+exactly what a reliability diagram shows: the MCE is its largest vertical
+departure from the diagonal.
+
+Averaging those gaps rather than maximising over them gives the more commonly
+reported ECE. The maximum is the conservative choice, and it is the right one
+when a single bad region of the confidence scale is what you are worried
+about — which, in a high-risk setting, it is.
+
+</details>
+
 ## Why it matters
 
 Because an uncalibrated probability is not a probability. It is a ranking score

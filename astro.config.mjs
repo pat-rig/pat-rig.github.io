@@ -1,5 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import { satteri } from '@astrojs/markdown-satteri';
+import katexMathml from './src/markdown/katex-mathml.mjs';
 
 // https://astro.build/config
 export default defineConfig({
@@ -23,6 +25,22 @@ export default defineConfig({
    */
   redirects: {
     '/writing': '/',
+  },
+  /*
+   * Sätteri is Astro's default Markdown processor and is named here only to
+   * turn one feature on: maths. `$…$` inline and `$$…$$` on their own lines for
+   * display, rendered to MathML by the plugin below — see
+   * src/markdown/katex-mathml.mjs for why MathML and not KaTeX's HTML output.
+   *
+   * Everything else stays at Astro's defaults, so no other post's rendering
+   * changes. Note that a bare `$` in prose is now a maths delimiter: write it
+   * as `\$` if a post ever needs a literal dollar sign.
+   */
+  markdown: {
+    processor: satteri({
+      features: { math: true },
+      mdastPlugins: [katexMathml],
+    }),
   },
   build: {
     // Emit `/blog/post/index.html` rather than `/blog/post.html`, which is what
