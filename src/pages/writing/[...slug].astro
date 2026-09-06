@@ -80,7 +80,7 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
             <Mark name={post.data.paper.mark} />
             <div>
               <p class="citation__label" id="citation-label">
-                Publication
+                {post.data.paper.label ?? 'Publication'}
               </p>
               <p class="citation__title">{post.data.paper.title}</p>
               {post.data.paper.authors && (

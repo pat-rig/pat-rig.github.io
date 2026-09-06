@@ -36,6 +36,14 @@ const blog = defineCollection({
         url: z.url().optional(),
         /** A recorded talk about the same work, listed under the paper link. */
         talk: z.url().optional(),
+        /**
+         * Overrides the block's default "Publication" header. Most posts are
+         * written around something that went through peer review and this is
+         * accurate as-is — but a seminar paper, a thesis chapter, or a
+         * preprint is not a publication, and labelling it one overstates its
+         * provenance. Set this whenever the default would be inaccurate.
+         */
+        label: z.string().optional(),
         mark: z.enum(MARKS).default('lines'),
       })
       .optional(),
