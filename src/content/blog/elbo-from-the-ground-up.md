@@ -37,6 +37,10 @@ for everything underneath. A closer investigation — including an original
 contribution of mine — is a separate article,
 [A VAE loss that enforces statistical dependencies](/writing/vae-loss-statistical-dependencies/).
 
+What's here builds on a short write-up I did during a seminar, working
+through the loss function of the CS-VAE model to understand it more closely.
+It's referenced at the foot of this post.
+
 Take a diagnostic model that flags a scan as malignant. A natural follow-up
 question is what the image would need to look like for the model to call it
 benign instead. If the answer only changes what the diagnosis actually
@@ -81,9 +85,8 @@ can at reading the label off `z`. $M_2$ is what the encoder is fighting
 against: an estimate of how much label information still leaks into `z`,
 which training pushes toward zero.
 
-This is the paper referenced at the foot of this post, put together as a
-seminar project around counterfactual medical imaging. Its own predictive
-performance was left unbenchmarked — an open question, not a result — but
-the mechanism is the part worth keeping: **information doesn't separate
-itself. If two things shouldn't share a representation, something in the
-loss has to be actively fighting to keep them apart.**
+That write-up put the model in the context of counterfactual medical imaging
+and left its predictive performance unbenchmarked — an open question, not a
+result. The mechanism is the part worth keeping: **information doesn't
+separate itself. If two things shouldn't share a representation, something in
+the loss has to be actively fighting to keep them apart.**
