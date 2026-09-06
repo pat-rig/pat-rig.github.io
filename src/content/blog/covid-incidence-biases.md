@@ -7,7 +7,7 @@ summary: >-
   standing in for.
 tags: [statistics, public-policy, measurement]
 track: data-science
-mark: bars
+mark: virus
 kind: Report
 status: planned
 repo: https://github.com/pat-rig/Covid_Incidence_Biases
@@ -18,7 +18,7 @@ paper:
   venue: University of Tübingen
   year: 2021
   url: https://raw.githubusercontent.com/pat-rig/Covid_Incidence_Biases/main/koehler_incidence_biases.pdf
-  mark: bars
+  mark: virus
 ---
 
 Planned. The notes exist; the write-up does not yet.
