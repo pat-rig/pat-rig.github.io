@@ -30,6 +30,13 @@ well-calibrated predictors — trustworthiness as a property of a classifier's
 property of the model's architecture: what a latent-variable model is built
 to represent, decided before it ever produces an output at all.
 
+What follows is a sketch of the general principle: how you control the way
+information gets organised inside a model's latent variables. It stays at the
+level of the idea and the intuition behind it, and leans on the base paper
+for everything underneath. A closer investigation — including an original
+contribution of mine — is a separate article,
+[A VAE loss that enforces statistical dependencies](/writing/vae-loss-statistical-dependencies/).
+
 Take a diagnostic model that flags a scan as malignant. A natural follow-up
 question is what the image would need to look like for the model to call it
 benign instead. If the answer only changes what the diagnosis actually
