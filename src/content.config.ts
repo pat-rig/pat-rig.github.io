@@ -42,7 +42,15 @@ const blog = defineCollection({
         authors: z.string().optional(),
         venue: z.string(),
         year: z.number().int().optional(),
-        url: z.url().optional(),
+        /**
+         * Either an absolute URL, or a root-relative path to a copy served
+         * from this site. The second form exists because a PDF hosted here is
+         * rendered by the browser, whereas GitHub serves raw files as
+         * `application/octet-stream` and every browser downloads them instead.
+         */
+        url: z
+          .union([z.url(), z.string().regex(/^\/[^\s]*$/, 'must be a root-relative path')])
+          .optional(),
         /** A recorded talk about the same work, listed under the paper link. */
         talk: z.url().optional(),
         /**
