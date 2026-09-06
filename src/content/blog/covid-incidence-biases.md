@@ -52,14 +52,26 @@ tested people who turned out to be infected is double.
 
 ![Two scatter plots, Germany weekly and Israel daily, of positive rate against incidence. Points are coloured by wave. Within each country the same incidence occurs at very different positive rates, and each wave forms its own band with a different slope.](./figures/covid/positive-rate-vs-incidence.png)
 
-*Positive rate against incidence, by wave. Each wave sits on its own line —
-so the same incidence means something different depending on which wave you
-read it in.*
+*Positive rate against incidence, by wave. Left: Germany, one point per week.
+Right: Israel, one point per day — there each wave sits on its own line, and
+the lines get flatter as the country tests more.*
 
-The correction is cheap, because the positive rate is already collected.
-Denmark is the illustration: the only European country through just two waves
-by late 2021, and the only one holding a mostly constant positive rate below
-2%.
+Israel, on the right, shows the mechanism cleanly, because the waves separate
+into distinct lines. They get flatter from wave to wave: the same incidence
+arrives with a lower and lower positive rate. That is testing volume rising —
+at peak incidence Israel ran 1.5 tests per 1,000 people in the first wave,
+5.8 in the second, 12.8 in the third and 19 in the fourth. Read the other
+way, the first wave is the steep blue line, and steep is bad: a high positive
+rate off very few detected cases means far more infections went unseen then
+than in any later wave. The incidence understated the pandemic most exactly
+when it was newest.
+
+The correction is cheap, because the positive rate is already collected — and
+it can be more than a correction. Hold the positive rate down and you are
+testing widely enough to catch outbreaks while they are small, which makes it
+a target for testing policy rather than only a reading of it. Denmark is the
+illustration: the only European country through just two waves by late 2021,
+and the only one holding a mostly constant positive rate below 2%.
 
 ## The same number means different things depending on how full the ICUs are
 
