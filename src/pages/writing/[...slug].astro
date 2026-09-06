@@ -33,10 +33,15 @@ const showToc = toc.length >= 3;
 // Send readers back to the track this post belongs to, not a generic index.
 const track = TRACKS.find((t) => t.id === post.data.track);
 
+/*
+ * Month and year, no day. A post is dated to when its work happened, and for
+ * older work the day is false precision — the CS-VAE post's day came from a
+ * PDF's compile timestamp. The `datetime` attribute still carries the full
+ * date for machines.
+ */
 const dateFormat = new Intl.DateTimeFormat('en-GB', {
   year: 'numeric',
   month: 'long',
-  day: 'numeric',
   timeZone: 'UTC',
 });
 ---
