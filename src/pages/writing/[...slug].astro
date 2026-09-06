@@ -69,7 +69,10 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
         {
           post.data.repo && (
             <p class="post__repo">
-              <a href={post.data.repo}>Source repository</a>
+              <a href={post.data.repo} target="_blank" rel="noopener">
+                Source repository
+                <span class="visually-hidden"> (opens in a new tab)</span>
+              </a>
             </p>
           )
         }
@@ -94,14 +97,31 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
               <p class="citation__venue">
                 {[post.data.paper.venue, post.data.paper.year].filter(Boolean).join(' · ')}
               </p>
+              {/*
+                The reference apparatus opens in a new tab: a paper, a talk or
+                a codebase is something a reader consults alongside the article
+                rather than instead of it.
+
+                `rel="noopener"` is belt-and-braces — browsers imply it for
+                `target="_blank"` now — and the visually-hidden note is how a
+                screen reader learns the tab will change, since the design
+                system forbids appended arrows (§2) and the affordance
+                therefore cannot be a visual one.
+              */}
               {post.data.paper.url && (
                 <p class="citation__link">
-                  <a href={post.data.paper.url}>Read the paper</a>
+                  <a href={post.data.paper.url} target="_blank" rel="noopener">
+                    Read the paper
+                    <span class="visually-hidden"> (opens in a new tab)</span>
+                  </a>
                 </p>
               )}
               {post.data.paper.talk && (
                 <p class="citation__link">
-                  <a href={post.data.paper.talk}>Watch the talk</a>
+                  <a href={post.data.paper.talk} target="_blank" rel="noopener">
+                    Watch the talk
+                    <span class="visually-hidden"> (opens in a new tab)</span>
+                  </a>
                 </p>
               )}
             </div>

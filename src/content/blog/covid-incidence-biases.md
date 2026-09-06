@@ -17,7 +17,7 @@ paper:
   authors: Patrick Köhler
   venue: University of Tübingen
   year: 2021
-  url: https://raw.githubusercontent.com/pat-rig/Covid_Incidence_Biases/main/koehler_incidence_biases.pdf
+  url: https://github.com/pat-rig/Covid_Incidence_Biases/blob/main/koehler_incidence_biases.pdf
   mark: virus
 ---
 

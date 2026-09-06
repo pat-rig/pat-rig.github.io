@@ -19,7 +19,7 @@ paper:
   authors: Patrick Köhler, Tobias Leemann
   venue: University of Tübingen
   year: 2021
-  url: https://raw.githubusercontent.com/pat-rig/csvae4counterfactuals/main/seminar_paper.pdf
+  url: https://github.com/pat-rig/csvae4counterfactuals/blob/main/seminar_paper.pdf
   mark: network
 ---
 
