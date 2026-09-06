@@ -1,6 +1,6 @@
 ---
 title: The ELBO, from the ground up
-date: 2026-09-06
+date: 2021-06-28
 summary: >-
   Trustworthiness again, but not in a classifier's output this time — in what
   a latent-variable model is built to represent in the first place, and a
