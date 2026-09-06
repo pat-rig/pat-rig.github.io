@@ -4,7 +4,15 @@ import { z } from 'astro/zod';
 import { TRACK_IDS } from './tracks';
 
 /** Shared so the entry mark and the citation mark can never drift apart. */
-const MARKS = ['grid', 'distribution', 'network', 'bars', 'fork', 'lines'] as const;
+const MARKS = [
+  'grid',
+  'distribution',
+  'network',
+  'bars',
+  'fork',
+  'lines',
+  'contour',
+] as const;
 
 const blog = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/blog' }),

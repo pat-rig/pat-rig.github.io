@@ -7,7 +7,7 @@ summary: >-
   seminar project that split a VAE's latent code on purpose.
 tags: [vae, variational-inference]
 track: data-science
-mark: distribution
+mark: contour
 kind: Note
 pin: 2
 status: draft
