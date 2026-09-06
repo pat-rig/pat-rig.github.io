@@ -129,11 +129,19 @@ const byTrack = TRACKS.map((track) => ({
     max-width: var(--measure);
   }
 
+  /*
+   * Not `--measure` here. That is 66ch, and `ch` scales with the element's own
+   * font size — so at --step--1 it resolves to a *narrower* box than the lede
+   * above gets, and broke the disclaimer onto a second line for the sake of
+   * its last two words. A rem cap holds the same line length regardless of
+   * type size. The sentence needs ~583px; this leaves it on one line wherever
+   * the column is wide enough, and lets it wrap normally once it isn't.
+   */
   .hero__note {
     margin-top: var(--space-4);
     font-size: var(--step--1);
     color: var(--text-2);
-    max-width: var(--measure);
+    max-width: var(--width-prose);
   }
 
   .hero__note-line {
