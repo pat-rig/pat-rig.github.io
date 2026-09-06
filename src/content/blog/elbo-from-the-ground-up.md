@@ -1,14 +1,16 @@
 ---
 title: The ELBO, from the ground up
-date: 2026-09-04
+date: 2026-09-06
 summary: >-
-  The evidence lower bound built up from first principles, and why it is the
-  quantity a variational autoencoder can actually optimise.
+  Calibration asks whether a model's output can be trusted. This one is
+  about a different lever — what the model is built to represent in the
+  first place, and a seminar project that split a VAE's latent code on
+  purpose.
 tags: [vae, variational-inference]
 track: data-science
 mark: distribution
 kind: Note
-status: planned
+status: draft
 paper:
   label: Seminar paper — not peer-reviewed
   title: >-
@@ -21,4 +23,59 @@ paper:
   mark: network
 ---
 
-Planned. The notes exist; the write-up does not yet.
+We've written elsewhere about [well-calibrated predictors](/writing/well-calibrated-predictors/)
+— the idea that a model's stated confidence should mean what it says. That
+post is about trusting a model's *output*. This one is about a different
+lever, upstream of any output: what a model is built to represent in the
+first place.
+
+Take a diagnostic model that flags a scan as malignant. A natural follow-up
+question is what the image would need to look like for the model to call it
+benign instead. If the answer only changes what the diagnosis actually
+depends on — a tumor's shape, its margins — a physician learns something
+real. If it also changes the patient's bone density or the scanner's
+contrast setting, it has learned nothing, because the model never kept those
+two kinds of information apart in the first place.
+
+## What a plain autoencoder doesn't ask for
+
+A variational autoencoder compresses an image into a latent code and asks
+two things of it: reconstruct the input well, and keep the code close to a
+simple prior, so that points nearby still decode into something sensible.
+Nothing in that objective says which part of the code should carry the
+diagnosis and which part should carry everything else. Label and non-label
+information get mixed by default, because nothing in the loss ever asks them
+not to be.
+
+## Splitting the code on purpose
+
+A [Conditional Subspace VAE](https://proceedings.neurips.cc/paper/2018/hash/73e5080f0f3804cb9cf470a8ce895dac-Abstract.html)
+*(Klys, Snell & Zemel, 2018)* fixes this by giving the label its own
+subspace. The latent code is split in two: `w`, encoded with the label as an
+input, and `z`, trained to reveal as little about the label as possible. The
+second half is the interesting part — an optimizer can't just be told "don't
+put label information here." Something has to actively push it out.
+
+The trick is adversarial. A second network is trained to guess the label
+from `z` alone. The encoder is then trained to do three things at once:
+reconstruct well, stay close to the prior, and make that guesser's job as
+hard as possible.
+
+$$
+\min_{\theta,\phi,\gamma} \; \beta_1 M_1 + \beta_2 M_2
+\qquad\qquad
+\max_{\delta} \; \beta_3 N
+$$
+
+$M_1$ is the ordinary VAE terms — reconstruction and regularity — extended
+to the split code. $N$ trains the guesser: it gets to become as good as it
+can at reading the label off `z`. $M_2$ is what the encoder is fighting
+against: an estimate of how much label information still leaks into `z`,
+which training pushes toward zero.
+
+This is the paper referenced at the foot of this post, put together as a
+seminar project around counterfactual medical imaging. Its own predictive
+performance was left unbenchmarked — an open question, not a result — but
+the mechanism is the part worth keeping: **information doesn't separate
+itself. If two things shouldn't share a representation, something in the
+loss has to be actively fighting to keep them apart.**
