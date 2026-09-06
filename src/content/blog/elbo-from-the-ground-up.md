@@ -2,8 +2,8 @@
 title: The ELBO, from the ground up
 date: 2026-09-06
 summary: >-
-  Calibration asks whether a model's output can be trusted. This one is
-  about a different lever — what the model is built to represent in the
+  Another look at model safety on this site — this time not a classifier's
+  output, but what a latent-variable model is built to represent in the
   first place, and a seminar project that split a VAE's latent code on
   purpose.
 tags: [vae, variational-inference]
@@ -23,11 +23,13 @@ paper:
   mark: network
 ---
 
-We've written elsewhere about [well-calibrated predictors](/writing/well-calibrated-predictors/)
-— the idea that a model's stated confidence should mean what it says. That
-post is about trusting a model's *output*. This one is about a different
-lever, upstream of any output: what a model is built to represent in the
-first place.
+Safety keeps coming up on this site, here and elsewhere, as versions of the
+same question: can this model actually be trusted. We've
+[written before](/writing/well-calibrated-predictors/) about well-calibrated
+predictors, where trust is a property of a classifier's *output* — whether a
+stated confidence means what it says. This post asks the same question a
+level upstream, for latent-variable models in general: not what a model
+reports, but what it's built to represent in the first place.
 
 Take a diagnostic model that flags a scan as malignant. A natural follow-up
 question is what the image would need to look like for the model to call it
