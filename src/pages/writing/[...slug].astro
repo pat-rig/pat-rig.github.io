@@ -158,8 +158,17 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
 </BaseLayout>
 
 <style>
+  /*
+   * The article column, and with it every figure in the article — nothing here
+   * breaks out of it, so this one number sets both.
+   *
+   * A rem rather than `--measure`: that token is 66ch, and `ch` resolves
+   * against each element's own font size, so it means 561px on body text and
+   * 1320px on an h1. A fixed width is the only way the column and the figures
+   * can be relied on to agree.
+   */
   .post {
-    max-width: var(--measure);
+    max-width: var(--width-prose);
   }
 
   /*
@@ -316,30 +325,16 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
    * the plot sitting on the page instead of in a box.
    */
   /*
-   * Figures may leave the measure. 66ch is a width for reading sentences, and
-   * these plots are 2.4:1 and 3.5:1 — the vaccination panel is 158px tall
-   * inside the measure, which is not a chart any more. They grow into the gap
-   * between the prose and the contents rail.
-   *
-   * The width is `min(what we want, what is actually there)`, so it can never
-   * reach the rail: `--fig-reserved` is the rail plus its gap plus a rem of
-   * guard for the scrollbar, and is 0 whenever no rail is rendered.
+   * Figures sit at the article column's width — they never break out of it.
+   * An earlier version let them grow into the gap beside the contents rail,
+   * which made them larger but left the right edge ragged against the prose.
+   * Patrick compared the two side by side and chose this; the column was
+   * widened instead, which lifts the text and the figures together.
    */
-  .post__body :global(p:has(> img)),
-  .post__body :global(p:has(> img) + p) {
-    --fig-reserved: 0rem;
-    width: min(calc(100% + 15rem), calc(100vw - 2 * var(--gutter) - var(--fig-reserved)));
-  }
+
 
   .post__body :global(p:has(> img)) {
     margin-top: var(--space-6);
-  }
-
-  @media (min-width: 66rem) {
-    .layout--toc .post__body :global(p:has(> img)),
-    .layout--toc .post__body :global(p:has(> img) + p) {
-      --fig-reserved: 19rem;
-    }
   }
 
   .post__body :global(img) {
