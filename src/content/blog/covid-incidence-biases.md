@@ -104,9 +104,15 @@ Once a population starts getting vaccinated, incidence and ICU demand come
 apart: the same number of cases sends fewer people to intensive care. The
 Italy chart above shows it in its last stretch — from July 2021 the ICU curve
 trails the incidence curve by longer than usual, and climbs more slowly than
-it, which had not happened in any wave since the first. In Denmark, cumulative
-ICU occupancy flattens after vaccination begins while cumulative incidence
-keeps climbing at much the same rate.
+it, which had not happened in any wave since the first.
+
+The chart below is the cleaner test, and it needs a word on how to read it.
+Each country's two curves are running totals — cases so far, ICU patients so
+far — drawn on separate axes, so the distance between them means nothing. Only
+the slopes do. Climbing together means every new case still carries its old ICU
+cost; pulling apart means cases that no longer end in intensive care. The three
+countries vaccinated at very different times, which is the point of setting
+them side by side.
 
 ![Three panels — Denmark, United Kingdom and Israel — plotting cumulative ICU occupancy against cumulative incidence over time, with dotted vertical lines marking the day each country's vaccination record starts and the days 25% and 50% of its population were fully vaccinated. The two curves separate after vaccination begins, and in Israel they converge again by the end.](./figures/covid/vaccination-effect.png)
 
@@ -115,11 +121,13 @@ country, the day its vaccination record starts and the days 25% and 50% of the
 population were fully vaccinated. Watch Israel on the right: the curves
 separate, then close again.*
 
-The part that complicates it is that the effect decays. Israel vaccinated
-earliest, and by its fourth wave the two curves were rising in step again —
-while in the UK, which reached the same coverage months later, the gap was
-still open. Adjusting for vaccination therefore takes two variables, not one:
-how much of the population is covered, and how long ago they were covered.
+Denmark and the UK are the straightforward cases: the curves separate once
+vaccination is under way, and stay separate. Israel is the warning, because the
+effect decays. It vaccinated earliest, and by its fourth wave the two curves
+were climbing in step again — while in the UK, which reached the same coverage
+months later, the gap was still open. Adjusting for vaccination therefore takes
+two variables, not one: how much of the population is covered, and how long ago
+they were covered.
 
 ## What it adds up to
 
