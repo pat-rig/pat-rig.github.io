@@ -101,15 +101,19 @@ The same incidence in both places describes two different degrees of trouble.
 ## Vaccination breaks the link — and then partly restores it
 
 Once a population starts getting vaccinated, incidence and ICU demand come
-apart: the same number of cases sends fewer people to intensive care. In
-Denmark, cumulative ICU occupancy flattens after vaccination begins while
-cumulative incidence keeps climbing at much the same rate.
+apart: the same number of cases sends fewer people to intensive care. The
+Italy chart above shows it in its last stretch — from July 2021 the ICU curve
+trails the incidence curve by longer than usual, and climbs more slowly than
+it, which had not happened in any wave since the first. In Denmark, cumulative
+ICU occupancy flattens after vaccination begins while cumulative incidence
+keeps climbing at much the same rate.
 
-![Three panels — Denmark, United Kingdom and Israel — plotting cumulative ICU occupancy against cumulative incidence over time, with dotted vertical lines marking vaccination milestones. The two curves separate after vaccination begins, and in Israel they converge again by the end.](./figures/covid/vaccination-effect.png)
+![Three panels — Denmark, United Kingdom and Israel — plotting cumulative ICU occupancy against cumulative incidence over time, with dotted vertical lines marking the first dose administered and the points at which 25% and 50% of the population were fully vaccinated. The two curves separate after vaccination begins, and in Israel they converge again by the end.](./figures/covid/vaccination-effect.png)
 
 *Cumulative ICU occupancy against cumulative incidence. Dotted lines mark
-vaccination milestones. Watch Israel on the right: the curves separate, then
-close again.*
+vaccination milestones (first dose, then 25% and 50% of the population fully
+vaccinated). Watch Israel on the right: the curves separate, then close
+again.*
 
 The part that complicates it is that the effect decays. Israel vaccinated
 earliest, and by its fourth wave the two curves were rising in step again —
