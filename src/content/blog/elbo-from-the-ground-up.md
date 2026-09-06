@@ -41,6 +41,8 @@ What's here builds on a short write-up I did during a seminar, working
 through the loss function of the CS-VAE model to understand it more closely.
 It's referenced at the foot of this post.
 
+## Intuition
+
 Take a diagnostic model that flags a scan as malignant. A natural follow-up
 question is what the image would need to look like for the model to call it
 benign instead. If the answer only changes what the diagnosis actually
