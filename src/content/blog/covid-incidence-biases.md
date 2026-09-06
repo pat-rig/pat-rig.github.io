@@ -131,9 +131,10 @@ they were covered.
 
 ## What it adds up to
 
-None of this makes incidence a bad number. It is a fast, cheap, real-time
-estimate of how many infections have been detected, and there is nothing else
-quite like it for that.
+Incidence on its own is not expressive of the thing we are actually interested
+in. It is a rough, real-time count of the infections that happened to be
+detected, and the three biases above are three ways that count parts company
+with the pandemic underneath it.
 
 It is simply not, on its own, a measure of how much trouble the hospitals are
 in — which is what the decisions attached to it were actually about. Read
