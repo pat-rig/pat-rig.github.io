@@ -30,10 +30,10 @@ pandemic situation it was standing in for.
 
 This post takes three of them at a very superficial level. More rigorous
 descriptions are in the report referenced at the foot of this page, written
-during a module at the University of Tübingen in 2021.
+during my studies at the University of Tübingen in 2021.
 
-One thing worth saying up front, because it decides what "better" even means
-here: the reason to restrict contacts was to keep hospitals functioning. So
+One thing worth saying up front to recall the context of the pandemic.
+The reason to restrict contacts was to keep hospitals functioning. So
 the fair test of the incidence number is not whether it counts cases
 correctly, but whether it predicts **intensive care occupancy**. Every bias
 below is a way it fails that test.
@@ -98,11 +98,12 @@ set per district, but ICU capacity is not distributed evenly — Saarland has
 roughly 50 intensive care beds per 100,000 inhabitants, Brandenburg about 25.
 The same incidence in both places describes two different degrees of trouble.
 
-## Vaccination breaks the link — and then partly restores it
+## Vaccination breaks the link between Incidence and ICU capacity
 
-Once a population starts getting vaccinated, incidence and ICU demand come
-apart: the same number of cases sends fewer people to intensive care. The
-Italy chart above shows it in its last stretch — from July 2021 the ICU curve
+Vaccination causes incidence and ICU occupancy to drift apart — a given
+incidence increasingly overstates ICU risk as vaccination progresses. The
+same number of cases sends fewer people to intensive care as coverage grows.
+The Italy chart above shows it in its last stretch — from July 2021 the ICU curve
 trails the incidence curve by longer than usual, and climbs more slowly than
 it, which had not happened in any wave since the first.
 
@@ -118,8 +119,7 @@ them side by side.
 
 *Cumulative ICU occupancy against cumulative incidence. Dotted lines mark, per
 country, the day its vaccination record starts and the days 25% and 50% of the
-population were fully vaccinated. Watch Israel on the right: the curves
-separate, then close again.*
+population were fully vaccinated.*
 
 Denmark and the UK are the straightforward cases: the curves separate once
 vaccination is under way, and stay separate. Israel is the warning, because the
@@ -129,7 +129,7 @@ months later, the gap was still open. Adjusting for vaccination therefore takes
 two variables, not one: how much of the population is covered, and how long ago
 they were covered.
 
-## What it adds up to
+## Takeaway
 
 Incidence on its own is not expressive of the thing we are actually interested
 in. It is a rough, real-time count of the infections that happened to be
