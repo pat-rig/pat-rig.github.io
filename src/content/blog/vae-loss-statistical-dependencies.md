@@ -10,6 +10,13 @@ track: data-science
 mark: network
 kind: Thesis
 status: planned
+paper:
+  label: Master's thesis
+  title: Augmenting Data Sets by Sampling from Disentangled Latent Variables
+  authors: Patrick Köhler
+  venue: University of Tübingen
+  year: 2022
+  mark: network
 ---
 
 Planned. The notes exist; the write-up does not yet.
