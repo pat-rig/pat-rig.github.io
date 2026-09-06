@@ -8,6 +8,7 @@ tags: [calibration, segmentation, publication]
 track: data-science
 mark: distribution
 kind: Publication
+pin: 1
 status: draft
 paper:
   title: >-

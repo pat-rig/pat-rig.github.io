@@ -7,10 +7,9 @@ import Disclaimer from '../components/Disclaimer.astro';
 import portrait from '../assets/portrait.jpg';
 import { SITE_NAME } from '../site';
 import { TRACKS } from '../tracks';
+import { byListingOrder } from '../ordering';
 
-const posts = (await getCollection('blog')).sort(
-  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
-);
+const posts = (await getCollection('blog')).sort(byListingOrder);
 
 /** Up to three entries per track on the landing page; the rest live on /writing/. */
 const byTrack = TRACKS.map((track) => ({

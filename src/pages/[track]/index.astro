@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Entry from '../../components/Entry.astro';
 import { TRACKS, type Track } from '../../tracks';
+import { byListingOrder } from '../../ordering';
 
 /**
  * One listing page per track: /data-science/ and /business/. Each shows only
@@ -24,7 +25,7 @@ const { track } = Astro.props;
 
 const posts = (await getCollection('blog'))
   .filter((post) => post.data.track === track.id)
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+  .sort(byListingOrder);
 
 const other = TRACKS.find((t) => t.id !== track.id);
 ---

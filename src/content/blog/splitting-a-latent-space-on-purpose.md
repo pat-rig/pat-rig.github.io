@@ -1,5 +1,5 @@
 ---
-title: The ELBO, from the ground up
+title: Splitting a latent space on purpose
 date: 2021-06-28
 summary: >-
   Trustworthiness again, but not in a classifier's output this time — in what
@@ -9,6 +9,7 @@ tags: [vae, variational-inference]
 track: data-science
 mark: distribution
 kind: Note
+pin: 2
 status: draft
 paper:
   label: Seminar paper — not peer-reviewed
@@ -61,7 +62,7 @@ diagnosis and which part should carry everything else. Label and non-label
 information get mixed by default, because nothing in the loss ever asks them
 not to be.
 
-## Splitting the code on purpose
+## Forcing the split
 
 A [Conditional Subspace VAE](https://proceedings.neurips.cc/paper/2018/hash/73e5080f0f3804cb9cf470a8ce895dac-Abstract.html)
 *(Klys, Snell & Zemel, 2018)* fixes this by giving the label its own

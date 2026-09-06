@@ -47,6 +47,17 @@ const blog = defineCollection({
         mark: z.enum(MARKS).default('lines'),
       })
       .optional(),
+    /**
+     * Manual position in the listings, lowest first. Pinned posts are placed
+     * above every unpinned one, which then follow newest-first as before.
+     *
+     * This exists because `date` has to do two jobs at once — say when the
+     * work happened, and decide what a reader sees first. The ELBO post is
+     * dated to its 2021 seminar paper and would otherwise sink below every
+     * unwritten stub. Pin the handful worth leading with; leave the rest
+     * alone.
+     */
+    pin: z.number().int().optional(),
     /** Optional short status shown in the entry meta, e.g. "collecting data". */
     status: z.string().optional(),
     /** Optional kind label shown in the entry meta, e.g. "Project", "Publication". */

@@ -25,6 +25,13 @@ export default defineConfig({
    */
   redirects: {
     '/writing': '/',
+    /*
+     * Renamed 2026-09-06 when the post stopped being about deriving the ELBO
+     * and became about controlling what a latent space represents. The old
+     * slug had already been deployed, so it stays alive rather than 404ing
+     * for anyone holding the link.
+     */
+    '/writing/elbo-from-the-ground-up': '/writing/splitting-a-latent-space-on-purpose/',
   },
   /*
    * Sätteri is Astro's default Markdown processor and is named here only to
