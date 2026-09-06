@@ -302,6 +302,65 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
     margin-top: var(--space-2);
   }
 
+  /*
+   * Figures lifted out of a paper. Markdown image syntax rather than a raw
+   * <figure>, because that is what Astro's image pipeline sees — it emits
+   * WebP at a third of the PNG's weight, with width and height set so the
+   * page does not jump as they load.
+   *
+   * `multiply` is what keeps them off a white card. These plots were saved by
+   * matplotlib on an opaque white ground, which on cream reads as a pasted-in
+   * rectangle. Multiplied against the page, white resolves to exactly the
+   * page colour and disappears; the ink stays. Colours warm very slightly —
+   * the blue moves by about two values per channel — which is the price of
+   * the plot sitting on the page instead of in a box.
+   */
+  /*
+   * Figures may leave the measure. 66ch is a width for reading sentences, and
+   * these plots are 2.4:1 and 3.5:1 — the vaccination panel is 158px tall
+   * inside the measure, which is not a chart any more. They grow into the gap
+   * between the prose and the contents rail.
+   *
+   * The width is `min(what we want, what is actually there)`, so it can never
+   * reach the rail: `--fig-reserved` is the rail plus its gap plus a rem of
+   * guard for the scrollbar, and is 0 whenever no rail is rendered.
+   */
+  .post__body :global(p:has(> img)),
+  .post__body :global(p:has(> img) + p) {
+    --fig-reserved: 0rem;
+    width: min(calc(100% + 15rem), calc(100vw - 2 * var(--gutter) - var(--fig-reserved)));
+  }
+
+  .post__body :global(p:has(> img)) {
+    margin-top: var(--space-6);
+  }
+
+  @media (min-width: 66rem) {
+    .layout--toc .post__body :global(p:has(> img)),
+    .layout--toc .post__body :global(p:has(> img) + p) {
+      --fig-reserved: 19rem;
+    }
+  }
+
+  .post__body :global(img) {
+    width: 100%;
+    height: auto;
+    mix-blend-mode: multiply;
+  }
+
+  /* The italic line following a figure is its caption. */
+  .post__body :global(p:has(> img) + p) {
+    margin-top: var(--space-3);
+    font-size: var(--step--1);
+    line-height: 1.45;
+    color: var(--text-2);
+    text-wrap: pretty;
+  }
+
+  .post__body :global(p:has(> img) + p em) {
+    font-style: normal;
+  }
+
   .post__body :global(blockquote) {
     border-left: 2px solid var(--line-strong);
     padding-left: var(--space-4);

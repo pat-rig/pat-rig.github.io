@@ -50,6 +50,12 @@ Germany's second wave shows the gap plainly. One week carried an incidence of
 with roughly 16% positive. The headline number is the same; the fraction of
 tested people who turned out to be infected is double.
 
+![Two scatter plots, Germany weekly and Israel daily, of positive rate against incidence. Points are coloured by wave. Within each country the same incidence occurs at very different positive rates, and each wave forms its own band with a different slope.](./figures/covid/positive-rate-vs-incidence.png)
+
+*Positive rate against incidence, by wave. Each wave sits on its own line —
+so the same incidence means something different depending on which wave you
+read it in.*
+
 The correction is cheap, because the positive rate is already collected.
 Denmark is the illustration: the only European country through just two waves
 by late 2021, and the only one holding a mostly constant positive rate below
@@ -64,6 +70,11 @@ Italy's second wave peaked near an incidence of 600; its third peaked below
 400. Yet ICU patients per million peaked at roughly the same level — about 60
 — in both. The reason is what the third wave started from: half the ICU beds
 were still occupied in March 2021, before it began.
+
+![Time series for Italy from early 2020 to late 2021, showing incidence, positive rate and ICU patients per million on three axes. The second wave peaks near an incidence of 600 and the third below 400, but the ICU curve reaches roughly the same height in both.](./figures/covid/italy-icu-vs-incidence.png)
+
+*Italy. The blue incidence curve peaks far higher in the second wave than the
+third; the orange ICU curve reaches almost the same height in both.*
 
 This one is not a testing artefact, and the numbers rule that out directly.
 At peak incidence, Italy ran 6.1 tests per positive case in the second wave
@@ -80,6 +91,12 @@ Once a population starts getting vaccinated, incidence and ICU demand come
 apart: the same number of cases sends fewer people to intensive care. In
 Denmark, cumulative ICU occupancy flattens after vaccination begins while
 cumulative incidence keeps climbing at much the same rate.
+
+![Three panels — Denmark, United Kingdom and Israel — plotting cumulative ICU occupancy against cumulative incidence over time, with dotted vertical lines marking vaccination milestones. The two curves separate after vaccination begins, and in Israel they converge again by the end.](./figures/covid/vaccination-effect.png)
+
+*Cumulative ICU occupancy against cumulative incidence. Dotted lines mark
+vaccination milestones. Watch Israel on the right: the curves separate, then
+close again.*
 
 The part that complicates it is that the effect decays. Israel vaccinated
 earliest, and by its fourth wave the two curves were rising in step again —
