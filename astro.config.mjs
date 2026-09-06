@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import { satteri } from '@astrojs/markdown-satteri';
 import katexMathml from './src/markdown/katex-mathml.mjs';
+import externalLinks from './src/markdown/external-links.mjs';
 
 // https://astro.build/config
 export default defineConfig({
@@ -47,6 +48,7 @@ export default defineConfig({
     processor: satteri({
       features: { math: true },
       mdastPlugins: [katexMathml],
+      hastPlugins: [externalLinks],
     }),
   },
   build: {
