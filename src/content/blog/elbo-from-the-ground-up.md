@@ -2,10 +2,9 @@
 title: The ELBO, from the ground up
 date: 2026-09-06
 summary: >-
-  Another look at model safety on this site — this time not a classifier's
-  output, but what a latent-variable model is built to represent in the
-  first place, and a seminar project that split a VAE's latent code on
-  purpose.
+  Trustworthiness again, but not in a classifier's output this time — in what
+  a latent-variable model is built to represent in the first place, and a
+  seminar project that split a VAE's latent code on purpose.
 tags: [vae, variational-inference]
 track: data-science
 mark: distribution
@@ -23,13 +22,13 @@ paper:
   mark: network
 ---
 
-Safety keeps coming up on this site, here and elsewhere, as versions of the
-same question: can this model actually be trusted. We've
-[written before](/writing/well-calibrated-predictors/) about well-calibrated
-predictors, where trust is a property of a classifier's *output* — whether a
-stated confidence means what it says. This post asks the same question a
-level upstream, for latent-variable models in general: not what a model
-reports, but what it's built to represent in the first place.
+This is another look at trustworthiness in image classifiers and
+latent-variable models more broadly.
+[We've written before](/writing/well-calibrated-predictors/) about
+well-calibrated predictors — trustworthiness as a property of a classifier's
+*output*, whether a stated confidence means what it says. Here it's a
+property of the model's architecture: what a latent-variable model is built
+to represent, decided before it ever produces an output at all.
 
 Take a diagnostic model that flags a scan as malignant. A natural follow-up
 question is what the image would need to look like for the model to call it
