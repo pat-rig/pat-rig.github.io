@@ -66,8 +66,13 @@ rate off very few detected cases means far more infections went unseen then
 than in any later wave. The incidence understated the pandemic most exactly
 when it was newest.
 
-The correction is cheap, because the positive rate is already collected — and
-it can be more than a correction. Hold the positive rate down and you are
+The correction is cheap where the data exists: nationally, the positive rate
+is already collected. The gap is scale — contact rules were set per district,
+but testing data was not collected per district, so the correction could not
+be applied where the rules actually bit. Collecting it at that scale is the
+missing piece.
+
+The positive rate can also be more than a correction. Hold it down and you are
 testing widely enough to catch outbreaks while they are small, which makes it
 a target for testing policy rather than only a reading of it. Denmark is the
 illustration: the only European country through just two waves by late 2021,
