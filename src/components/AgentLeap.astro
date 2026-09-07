@@ -420,7 +420,7 @@ const { theme = 'paper' } = Astro.props;
     { x: 34, z: 120, world: 'azure', kind: 'site', h: 0, label: '' },
     /* carries no art — it exists only to place the closing line, clear of the
        skyline and away from the tower labels */
-    { x: 58, z: 116, world: 'azure', kind: 'title', h: 112, lmul: 1.7, label: 'what I can build with agents' },
+    { x: 58, z: 116, world: 'azure', kind: 'title', h: 112, lmul: 1.45, label: 'what I can build with agents' },
   ];
   const CHAPTERS = [
     { t: 0, title: 'Before agents', text: 'A few hills, reachable at pedalling speed.' },
@@ -905,15 +905,21 @@ const { theme = 'paper' } = Astro.props;
     );
     el('rect', { x: -52, y: -27, width: 9, height: 7, rx: 2, fill: T.metal }, shipBody);
     el('rect', { x: -52, y: -19, width: 9, height: 7, rx: 2, fill: T.metal }, shipBody);
+    /*
+     * On the fin, not the hull. It used to sit at the hull's midpoint, which is
+     * exactly where the canopy is — dark lettering on the dark canopy, so it
+     * disappeared. The fin is a clear panel and reads like a livery.
+     */
     const hullText = el(
       'text',
       {
-        x: -4,
-        y: -17.5,
+        x: -9.5,
+        y: -42,
         'text-anchor': 'middle',
-        fill: T.monoPlanets ? T.ink : '#0d0f12',
-        'font-size': 7.4,
-        'letter-spacing': '1.6',
+        fill: T.monoPlanets ? T.ink : INK,
+        'font-size': 5.6,
+        'letter-spacing': '0.5',
+        'font-weight': 700,
         class: 'leap-label',
       },
       shipBody
@@ -1058,7 +1064,7 @@ const { theme = 'paper' } = Astro.props;
 
     function render(t: number) {
       const c = camAt(t);
-      const labelUnits = unitsFor(11);
+      const labelUnits = unitsFor(14);
       const Vw = view(c.pos, c.tgt);
       const onAzure = t > T_TOUCH;
       const hf = onAzure ? hAzure : hHome;
