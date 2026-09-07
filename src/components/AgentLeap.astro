@@ -51,10 +51,6 @@ const { theme = 'paper' } = Astro.props;
       and APIs, before landing on one called Azure."></svg>
     <div class="leap__hud">
       <p class="leap__chapter"><b data-leap-title></b><span data-leap-text></span></p>
-      <p class="leap__readout">
-        distance from the hills<br />
-        <em data-leap-dist>0</em> u · <em data-leap-reach>1.0×</em> the bike’s range
-      </p>
     </div>
     <button class="leap__toggle" type="button" data-leap-toggle aria-label="Pause animation">
       Pause
@@ -124,8 +120,7 @@ const { theme = 'paper' } = Astro.props;
     pointer-events: none;
   }
 
-  .leap__chapter,
-  .leap__readout {
+  .leap__chapter {
     margin: 0;
   }
 
@@ -146,29 +141,6 @@ const { theme = 'paper' } = Astro.props;
 
   .leap--board .leap__chapter span {
     color: #a6aebb;
-  }
-
-  .leap__readout {
-    font-family: var(--font-mono);
-    font-size: var(--step--1);
-    line-height: 1.35;
-    text-align: right;
-    color: var(--text-2);
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-  }
-
-  .leap--board .leap__readout {
-    color: #8c95a3;
-  }
-
-  .leap__readout em {
-    font-style: normal;
-    color: var(--text-0);
-  }
-
-  .leap--board .leap__readout em {
-    color: #fde725;
   }
 
   .leap__toggle {
@@ -205,11 +177,6 @@ const { theme = 'paper' } = Astro.props;
     }
   }
 
-  @media (max-width: 40rem) {
-    .leap__readout {
-      display: none;
-    }
-  }
 </style>
 
 <style is:global>
@@ -428,7 +395,6 @@ const { theme = 'paper' } = Astro.props;
       text: 'Same craft, same timber. You just get to build at another size.',
     },
   ];
-  const BIKE_RANGE = 150;
 
   function catmull(P: Vec[], s: number): Vec {
     const n = P.length - 1,
@@ -467,8 +433,6 @@ const { theme = 'paper' } = Astro.props;
     const svg = root.querySelector('.leap__svg') as SVGSVGElement;
     const titleEl = root.querySelector('[data-leap-title]') as HTMLElement;
     const textEl = root.querySelector('[data-leap-text]') as HTMLElement;
-    const distEl = root.querySelector('[data-leap-dist]') as HTMLElement;
-    const reachEl = root.querySelector('[data-leap-reach]') as HTMLElement;
     const toggle = root.querySelector('[data-leap-toggle]') as HTMLButtonElement;
 
     /* arc-length table, so the ship holds a steady speed through the turns */
@@ -1246,10 +1210,6 @@ const { theme = 'paper' } = Astro.props;
         t > T_TOUCH - 0.35 && t < T_TOUCH + 0.5 ? ((1 - Math.abs(t - T_TOUCH) / 0.45) * 0.85).toFixed(2) : '0'
       );
 
-      const here: Vec = t < T_LAUNCH ? [0, 0, 70] : flyAt(flightFrac(t));
-      const d = Math.hypot(here[0], here[1], here[2] - 70);
-      distEl.textContent = Math.round(d).toLocaleString();
-      reachEl.textContent = (1 + d / BIKE_RANGE).toFixed(d < BIKE_RANGE ? 1 : 0) + '×';
       let ch = CHAPTERS[0];
       for (const c2 of CHAPTERS) if (t >= c2.t) ch = c2;
       titleEl.textContent = ch.title;
