@@ -2,6 +2,7 @@
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Mark from '../../components/Mark.astro';
+import AgentLeap from '../../components/AgentLeap.astro';
 import { TRACKS } from '../../tracks';
 
 export async function getStaticPaths() {
@@ -77,6 +78,8 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
           )
         }
       </header>
+
+      {post.data.viz === 'agent-leap' && <AgentLeap />}
 
       <div class="post__body">
         <Content />

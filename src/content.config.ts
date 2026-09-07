@@ -75,6 +75,12 @@ const blog = defineCollection({
      * alone.
      */
     pin: z.number().int().optional(),
+    /**
+     * Names an interactive figure to render at the head of the post. A `z.enum`
+     * rather than a free string so a typo fails the build instead of silently
+     * rendering nothing — the post template maps these names to components.
+     */
+    viz: z.enum(['agent-leap']).optional(),
     /** Optional short status shown in the entry meta, e.g. "collecting data". */
     status: z.string().optional(),
     /** Optional kind label shown in the entry meta, e.g. "Project", "Publication". */

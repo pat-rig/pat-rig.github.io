@@ -1,0 +1,1108 @@
+---
+/*
+ * The reachable-space animation: hills and a bicycle, boarding, a flight past
+ * the planets, a cockpit landing. One 3D camera throughout — position, look-at
+ * and focal length — so every act shares a single space.
+ *
+ * Presentation follows docs/design.md rather than inventing its own look:
+ *
+ * - It sits on `--board`, the token the design system reserves for a
+ *   visualisation ground ("not a page surface"). No border and no radius: a
+ *   bordered rounded plate is the anti-pattern the design doc names, and the
+ *   figure rule says a box "would read as a widget pasted into the article".
+ * - It breaks out to `--width-wide` so it is plainly a band the article passes
+ *   through rather than an embed sitting inside the text column.
+ * - Readouts are `--font-mono`, the site's data face.
+ * - Colour comes from the heatmap bins. That is a compromise worth knowing
+ *   about: viridis is a *sequential* scale and these five planets are
+ *   categories, so two of them sit closer together than ideal. The labels
+ *   carry the distinction. Introducing a second accent palette would break the
+ *   one-bold-place budget, which seemed the worse trade.
+ *
+ * Motion: under `prefers-reduced-motion: reduce` nothing animates and nothing
+ * is scheduled — a single frame is drawn and a button offers to play it.
+ */
+---
+
+<figure class="leap" data-agent-leap>
+  <div class="leap__plate">
+    <svg
+      class="leap__svg"
+      viewBox="0 0 1200 720"
+      role="img"
+      aria-label="An animation: a cyclist crossing a small range of hills, then boarding a
+      starfighter marked AI AGENT and flying past planets labelled CI/CD, Databases, Web apps
+      and APIs, before landing on one called Azure."></svg>
+    <div class="leap__hud">
+      <p class="leap__chapter"><b data-leap-title></b><span data-leap-text></span></p>
+      <p class="leap__readout">
+        distance from the hills<br />
+        <em data-leap-dist>0</em> u · <em data-leap-reach>1.0×</em> the bike’s range
+      </p>
+    </div>
+    <button class="leap__toggle" type="button" data-leap-toggle aria-label="Pause animation">
+      Pause
+    </button>
+  </div>
+</figure>
+
+<style>
+  /*
+   * Breaks out of the article column to the site's wide measure, anchored to
+   * the column's left edge so it lines up with the masthead rule above it.
+   *
+   * Not centred on the column and not `100vw`: the article is left-aligned
+   * inside a wider shell, so any column-relative centring drifts left of the
+   * page and hangs off the viewport. Left-anchoring is the only version that
+   * reads as composed rather than as an overflow.
+   *
+   * This is a deliberate exception to the template's "nothing breaks out of
+   * the column" rule — a figure this size at 42rem would be a postage stamp —
+   * and it only works because the post carries no contents rail to collide
+   * with. A post using this component should stay under three headings.
+   */
+  .leap {
+    width: var(--width-wide);
+    max-width: calc(100vw - 2 * var(--gutter));
+    margin: var(--space-7) 0;
+  }
+
+  .leap__plate {
+    position: relative;
+    background: var(--board);
+    /* No border, no radius, no shadow — see the note above. */
+    border-radius: var(--radius-0);
+  }
+
+  .leap__svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .leap__hud {
+    position: absolute;
+    inset: auto 0 0 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-6);
+    padding: var(--space-4) var(--space-5);
+    pointer-events: none;
+  }
+
+  .leap__chapter,
+  .leap__readout {
+    margin: 0;
+  }
+
+  .leap__chapter b {
+    display: block;
+    font-size: var(--step--1);
+    color: #e7eaee;
+  }
+
+  .leap__chapter span {
+    font-size: var(--step--1);
+    color: #a6aebb;
+  }
+
+  .leap__readout {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    line-height: 1.35;
+    text-align: right;
+    color: #8c95a3;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .leap__readout em {
+    font-style: normal;
+    color: #fde725;
+  }
+
+  .leap__toggle {
+    position: absolute;
+    top: var(--space-3);
+    right: var(--space-3);
+    font: inherit;
+    font-size: var(--step--1);
+    font-family: var(--font-mono);
+    color: #e7eaee;
+    background: transparent;
+    border: 1px solid #626c79;
+    border-radius: var(--radius-1);
+    padding: var(--space-1) var(--space-3);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity var(--dur-2) var(--ease);
+  }
+
+  .leap__plate:hover .leap__toggle,
+  .leap__toggle:focus-visible {
+    opacity: 1;
+  }
+
+  /* With motion reduced the control is the only way in, so it always shows. */
+  @media (prefers-reduced-motion: reduce) {
+    .leap__toggle {
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 40rem) {
+    .leap__readout {
+      display: none;
+    }
+  }
+</style>
+
+<style is:global>
+  /*
+   * The scene's contents are built in JavaScript, so they carry no scoping
+   * attribute and a scoped rule would never reach them.
+   */
+  .leap__svg text.leap-label {
+    font-family: var(--font-sans);
+    font-weight: 600;
+  }
+
+  .leap__svg text.leap-mono {
+    font-family: var(--font-mono);
+  }
+</style>
+
+<script>
+  const NS = 'http://www.w3.org/2000/svg';
+  type Vec = [number, number, number];
+
+  const el = (n: string, a: Record<string, string | number> = {}, p?: Element) => {
+    const e = document.createElementNS(NS, n);
+    for (const k in a) e.setAttribute(k, String(a[k]));
+    if (p) p.appendChild(e);
+    return e;
+  };
+  const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
+  const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+  const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const smooth = (e0: number, e1: number, x: number) => {
+    const t = clamp((x - e0) / (e1 - e0), 0, 1);
+    return t * t * (3 - 2 * t);
+  };
+  const setShown = (g: Element, on: boolean) =>
+    on ? g.removeAttribute('display') : g.setAttribute('display', 'none');
+
+  const sub = (a: Vec, b: Vec): Vec => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+  const add = (a: Vec, b: Vec): Vec => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+  const mul = (a: Vec, s: number): Vec => [a[0] * s, a[1] * s, a[2] * s];
+  const dot = (a: Vec, b: Vec) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const cross = (a: Vec, b: Vec): Vec => [
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0],
+  ];
+  const norm = (a: Vec): Vec => {
+    const l = Math.hypot(a[0], a[1], a[2]) || 1;
+    return [a[0] / l, a[1] / l, a[2] / l];
+  };
+  const lerp3 = (a: Vec, b: Vec, t: number): Vec => [
+    lerp(a[0], b[0], t),
+    lerp(a[1], b[1], t),
+    lerp(a[2], b[2], t),
+  ];
+
+  /* Heatmap bins (§6.1) reused as the scene's palette. */
+  const BIN = {
+    b1: '#3b528b',
+    b2: '#31688e',
+    b3: '#21918c',
+    b4: '#27ad81',
+    b5: '#5ec962',
+    b6: '#fde725',
+  };
+  const INK = '#e7eaee';
+  const DIM = '#8c95a3';
+
+  const CX = 600,
+    CY = 360,
+    F = 880;
+  /*
+   * proj() returns F/z — pixels per world unit at that depth. Sprite art is
+   * drawn in its own local units, so each needs its own art-units-per-world-unit
+   * factor on top of that.
+   */
+  const S_NODE = 0.22,
+    S_BIKE = 0.18,
+    S_WALK = 0.22,
+    S_SHIP = 0.13;
+
+  const COLS = 22,
+    ROWS = 15;
+  const TX0 = -78,
+    TX1 = 78,
+    TZ0 = 14,
+    TZ1 = 182;
+  const gx = (i: number) => lerp(TX0, TX1, i / COLS);
+  const gz = (j: number) => lerp(TZ0, TZ1, j / ROWS);
+
+  const T_RIDE = 7,
+    T_OFF = 9.2,
+    T_BOARD = 12.4,
+    T_LAUNCH = 14,
+    T_COCK = 32,
+    T_TOUCH = 36.6,
+    DUR = 42;
+  /* The frame drawn when motion is reduced: the ship abeam of a planet. */
+  const STILL_T = 22.6;
+
+  function hHome(x: number, z: number) {
+    const g = (cx: number, cz: number, a: number, s: number) =>
+      a * Math.exp(-((x - cx) ** 2 + (z - cz) ** 2) / (2 * s * s));
+    return (
+      g(-34, 74, 17, 27) +
+      g(30, 116, 14, 23) +
+      g(4, 158, 9, 30) +
+      g(58, 48, 11, 17) +
+      1.6 * Math.sin(x * 0.09) * Math.cos(z * 0.07)
+    );
+  }
+  const hAzure = (x: number, z: number) =>
+    2.2 * Math.sin(x * 0.05) * Math.cos(z * 0.04) + 1.4 * Math.sin(z * 0.09);
+
+  /* Mixes two hex colours, so the terrain ramps along the bins. */
+  function mix(a: string, b: string, t: number) {
+    const p = (h: string) => [
+      parseInt(h.slice(1, 3), 16),
+      parseInt(h.slice(3, 5), 16),
+      parseInt(h.slice(5, 7), 16),
+    ];
+    const [r1, g1, b1] = p(a),
+      [r2, g2, b2] = p(b);
+    const c = (x: number, y: number) => Math.round(lerp(x, y, clamp(t, 0, 1)));
+    return `rgb(${c(r1, r2)} ${c(g1, g2)} ${c(b1, b2)})`;
+  }
+
+  const HOMEP = { pos: [0, -330, 80] as Vec, r: 300, c: DIM, name: 'my laptop' };
+  const PLANETS = [
+    { name: 'CI / CD', pos: [-400, 60, 980] as Vec, r: 120, c: BIN.b6, motif: 'arcs' },
+    { name: 'Databases', pos: [480, -80, 1760] as Vec, r: 145, c: BIN.b4, motif: 'discs' },
+    { name: 'Web apps', pos: [-450, 120, 2540] as Vec, r: 130, c: BIN.b1, motif: 'panes' },
+    { name: 'APIs & infra', pos: [430, 190, 3320] as Vec, r: 110, c: BIN.b5, motif: 'hex' },
+    { name: 'Azure', pos: [0, -30, 4520] as Vec, r: 300, c: BIN.b2, motif: 'grid' },
+  ];
+  /*
+   * The planets flank the corridor and the ship threads between them, coming no
+   * closer than about three radii. An earlier layout put the waypoints on the
+   * planet centres, which read as flying into them rather than past them.
+   * Azure is the exception: that one is the destination, so it is dead ahead.
+   */
+  const FLY: Vec[] = [
+    [0, 26, 70],
+    [10, 90, 260],
+    [-30, 120, 560],
+    [-60, 110, 860],
+    [-40, 70, 1180],
+    [40, 20, 1480],
+    [85, -15, 1760],
+    [60, 15, 2060],
+    [-20, 65, 2340],
+    [-45, 95, 2540],
+    [-10, 115, 2860],
+    [40, 145, 3160],
+    [55, 155, 3320],
+    [30, 110, 3640],
+    [10, 40, 3960],
+    [0, 0, 4180],
+    [0, -15, 4230],
+  ];
+  const NODES = [
+    { x: -40, z: 60, label: 'Jupyter notebook' },
+    { x: 16, z: 130, label: 'Python script' },
+    { x: 56, z: 52, label: 'GPU box' },
+  ];
+  const CHAPTERS = [
+    { t: 0, title: 'Before agents', text: 'A few hills, reachable at pedalling speed.' },
+    { t: 7.2, title: 'He stops', text: 'The end of the road a bicycle can reach.' },
+    { t: 9.4, title: 'AI AGENT', text: 'It was parked there the whole time.' },
+    { t: 14.2, title: 'With agents', text: 'Same human. The range is what changed.' },
+    { t: 18, title: 'Passing through', text: 'Each of these was out of reach on a bicycle.' },
+    { t: 32.2, title: 'Approach', text: 'Fuel costs money. You pick the trips worth taking.' },
+    {
+      t: 37.2,
+      title: 'And then you explore',
+      text: 'The same grid as the old hills — this world just has far more of it.',
+    },
+  ];
+  const BIKE_RANGE = 150;
+
+  function catmull(P: Vec[], s: number): Vec {
+    const n = P.length - 1,
+      x = clamp(s, 0, 1) * n;
+    const i = Math.min(Math.floor(x), n - 1),
+      f = x - i;
+    const p0 = P[Math.max(i - 1, 0)],
+      p1 = P[i],
+      p2 = P[i + 1],
+      p3 = P[Math.min(i + 2, n)];
+    const f2 = f * f,
+      f3 = f2 * f;
+    const out = [0, 0, 0];
+    for (let k = 0; k < 3; k++)
+      out[k] =
+        0.5 *
+        (2 * p1[k] +
+          (-p0[k] + p2[k]) * f +
+          (2 * p0[k] - 5 * p1[k] + 4 * p2[k] - p3[k]) * f2 +
+          (-p0[k] + 3 * p1[k] - 3 * p2[k] + p3[k]) * f3);
+    return out as Vec;
+  }
+
+  function build(root: HTMLElement) {
+    const svg = root.querySelector('.leap__svg') as SVGSVGElement;
+    const titleEl = root.querySelector('[data-leap-title]') as HTMLElement;
+    const textEl = root.querySelector('[data-leap-text]') as HTMLElement;
+    const distEl = root.querySelector('[data-leap-dist]') as HTMLElement;
+    const reachEl = root.querySelector('[data-leap-reach]') as HTMLElement;
+    const toggle = root.querySelector('[data-leap-toggle]') as HTMLButtonElement;
+
+    /* arc-length table, so the ship holds a steady speed through the turns */
+    const NSAMP = 800;
+    const LUT = [0];
+    let prevP = catmull(FLY, 0),
+      TOTAL = 0;
+    for (let k = 1; k <= NSAMP; k++) {
+      const p = catmull(FLY, k / NSAMP);
+      TOTAL += Math.hypot(p[0] - prevP[0], p[1] - prevP[1], p[2] - prevP[2]);
+      LUT.push(TOTAL);
+      prevP = p;
+    }
+    const flyAt = (frac: number) => {
+      const target = clamp(frac, 0, 1) * TOTAL;
+      let lo = 0,
+        hi = NSAMP;
+      while (lo < hi) {
+        const m = (lo + hi) >> 1;
+        if (LUT[m] < target) lo = m + 1;
+        else hi = m;
+      }
+      return catmull(FLY, lo / NSAMP);
+    };
+
+    const defs = el('defs', {}, svg);
+    const glow = el('radialGradient', { id: 'leapGlow' }, defs);
+    el('stop', { offset: '0%', 'stop-color': BIN.b6, 'stop-opacity': '0.9' }, glow);
+    el('stop', { offset: '100%', 'stop-color': BIN.b6, 'stop-opacity': '0' }, glow);
+    const haze = el('radialGradient', { id: 'leapHaze' }, defs);
+    el('stop', { offset: '0%', 'stop-color': BIN.b3, 'stop-opacity': '0.30' }, haze);
+    el('stop', { offset: '100%', 'stop-color': BIN.b3, 'stop-opacity': '0' }, haze);
+    for (const p of [...PLANETS, HOMEP]) {
+      const id = 'leapP' + p.name.replace(/\W/g, '');
+      const rg = el('radialGradient', { id, cx: '0.36', cy: '0.32', r: '0.78' }, defs);
+      el('stop', { offset: '0%', 'stop-color': p.c, 'stop-opacity': '0.62' }, rg);
+      el('stop', { offset: '62%', 'stop-color': p.c, 'stop-opacity': '0.20' }, rg);
+      el('stop', { offset: '100%', 'stop-color': '#05070e', 'stop-opacity': '0.92' }, rg);
+      (p as { grad?: string }).grad = `url(#${id})`;
+    }
+
+    const gStars = el('g', {}, svg);
+    const gSpace = el('g', {}, svg);
+    const gHaze = el('g', {}, svg);
+    const gTerr = el('g', {}, svg);
+    const gProps = el('g', {}, svg);
+    const gShipR = el('g', { opacity: 0 }, svg);
+    const gCock = el('g', { opacity: 0 }, svg);
+    const gFlash = el('g', {}, svg);
+
+    let seed = 11;
+    const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+    const STARS: { p: Vec; b: number; el: Element }[] = [];
+    for (let i = 0; i < 420; i++)
+      STARS.push({
+        p: [(rnd() - 0.5) * 5200, (rnd() - 0.5) * 3200, rnd() * 5600 - 400],
+        b: 0.7 + rnd() * 2.1,
+        el: el('circle', { cx: -99, cy: -99, r: 1, fill: INK }, gStars),
+      });
+
+    type P = (typeof PLANETS)[number] & {
+      g?: Element;
+      base?: Element;
+      disc?: Element;
+      rim?: Element;
+      motifG?: Element;
+      label?: Element;
+      grad?: string;
+    };
+    const ALL = [...PLANETS, HOMEP] as P[];
+    for (const p of ALL) {
+      p.g = el('g', {}, gSpace);
+      /* Solid base first: the gradient alone is ~20% opaque mid-disc, and the
+         starfield behind would otherwise shine straight through the planet. */
+      p.base = el('circle', { cx: 0, cy: 0, r: 1, fill: '#05070e' }, p.g);
+      p.disc = el('circle', { cx: 0, cy: 0, r: 1, fill: p.grad! }, p.g);
+      p.rim = el(
+        'circle',
+        { cx: 0, cy: 0, r: 1, fill: 'none', stroke: p.c, 'stroke-width': 2, opacity: 0.9 },
+        p.g
+      );
+      p.motifG = el('g', {}, p.g);
+      p.label = el('text', { 'text-anchor': 'middle', fill: p.c, class: 'leap-label' }, p.g);
+      p.label.textContent = p.name;
+    }
+    function drawMotif(p: P, R: number) {
+      const m = p.motifG!;
+      while (m.firstChild) m.removeChild(m.firstChild);
+      const st = {
+        fill: 'none',
+        stroke: p.c,
+        'stroke-width': Math.max(R * 0.012, 0.6),
+        opacity: 0.55,
+      };
+      const band = (k: number) => R * Math.sqrt(Math.max(0, 1 - (0.31 * k) ** 2)) * 0.95;
+      if (p.motif === 'discs')
+        for (let k = -2; k <= 2; k++)
+          el('ellipse', { cx: 0, cy: R * 0.31 * k, rx: band(k), ry: R * 0.11, ...st }, m);
+      else if (p.motif === 'arcs')
+        for (let k = 1; k <= 3; k++) el('circle', { cx: 0, cy: 0, r: (R * k) / 3.6, ...st }, m);
+      else if (p.motif === 'panes')
+        for (let k = -1; k <= 1; k++) {
+          el(
+            'line',
+            { x1: R * 0.55 * k, y1: -R * 0.82, x2: R * 0.55 * k, y2: R * 0.82, ...st },
+            m
+          );
+          el(
+            'line',
+            { x1: -R * 0.82, y1: R * 0.55 * k, x2: R * 0.82, y2: R * 0.55 * k, ...st },
+            m
+          );
+        }
+      else if (p.motif === 'hex') {
+        for (let k = 0; k < 6; k++) {
+          const a = (k * Math.PI) / 3;
+          el(
+            'line',
+            { x1: 0, y1: 0, x2: R * 0.86 * Math.cos(a), y2: R * 0.86 * Math.sin(a), ...st },
+            m
+          );
+        }
+        el('circle', { cx: 0, cy: 0, r: R * 0.45, ...st }, m);
+      } else
+        for (let k = -2; k <= 2; k++) {
+          el('ellipse', { cx: 0, cy: R * 0.31 * k, rx: band(k), ry: R * 0.1, ...st }, m);
+          el('ellipse', { cx: R * 0.31 * k, cy: 0, rx: R * 0.1, ry: band(k), ...st }, m);
+        }
+    }
+
+    const hz = el('ellipse', { cx: CX, cy: 0, rx: 1, ry: 1, fill: 'url(#leapHaze)' }, gHaze);
+    const QUADS: { i: number; j: number; el: Element }[] = [];
+    for (let j = ROWS - 1; j >= 0; j--)
+      for (let i = 0; i < COLS; i++)
+        QUADS.push({
+          i,
+          j,
+          el: el(
+            'path',
+            { d: '', stroke: BIN.b3, 'stroke-width': 0.5, 'stroke-opacity': 0.28 },
+            gTerr
+          ),
+        });
+    const CONTOURS: { j: number; el: Element }[] = [];
+    for (let j = 0; j <= ROWS; j += 3)
+      CONTOURS.push({
+        j,
+        el: el(
+          'path',
+          { d: '', fill: 'none', stroke: BIN.b5, 'stroke-width': 1.1, opacity: 0.4 },
+          gTerr
+        ),
+      });
+
+    const NODEG = NODES.map((n) => {
+      const g = el('g', {}, gProps);
+      el('ellipse', { cx: 0, cy: 0, rx: 9, ry: 3, fill: '#000', opacity: 0.42 }, g);
+      el(
+        'path',
+        {
+          d: 'M -7 0 L -7 -9 L 0 -13 L 7 -9 L 7 0 L 0 3.5 Z',
+          fill: '#141a24',
+          stroke: BIN.b6,
+          'stroke-width': 1,
+          'stroke-linejoin': 'round',
+        },
+        g
+      );
+      el('path', { d: 'M -7 -9 L 0 -13 L 7 -9 L 0 -5.5 Z', fill: BIN.b6, opacity: 0.85 }, g);
+      const t = el(
+        'text',
+        { x: 0, y: -18, 'text-anchor': 'middle', fill: BIN.b6, 'font-size': 6.5, class: 'leap-label' },
+        g
+      );
+      t.textContent = n.label;
+      return { g };
+    });
+
+    const bikeG = el('g', {}, gProps);
+    const bikeShadow = el('ellipse', { cx: 0, cy: 0, rx: 11, ry: 3.4, fill: '#000', opacity: 0.4 }, bikeG);
+    const bikeTilt = el('g', {}, bikeG);
+    const bikeLean = el('g', {}, bikeTilt);
+    const bikeOnly = el('g', {}, bikeLean);
+    const spokes = el('g', {}, bikeOnly);
+    el('path', { d: 'M -7 -6 L -7 -12 M -13 -6 L -1 -6', stroke: INK, 'stroke-width': 1 }, spokes);
+    el('circle', { cx: -7, cy: -6, r: 6, fill: 'none', stroke: INK, 'stroke-width': 1.3 }, bikeOnly);
+    el('circle', { cx: 7, cy: -6, r: 6, fill: 'none', stroke: INK, 'stroke-width': 1.3 }, bikeOnly);
+    el(
+      'path',
+      {
+        d: 'M -7 -6 L 0 -11 L 7 -6 M 0 -11 L 2.6 -14',
+        fill: 'none',
+        stroke: INK,
+        'stroke-width': 1.3,
+        'stroke-linejoin': 'round',
+      },
+      bikeOnly
+    );
+    const riderOnBike = el('g', {}, bikeLean);
+    el('circle', { cx: 1, cy: -23, r: 3.6, fill: BIN.b6 }, riderOnBike);
+    el(
+      'path',
+      {
+        d: 'M 1 -19.6 L 1 -12.4 M 1 -18 L 4.4 -14.4 M 1 -12.4 L -1.6 -9',
+        fill: 'none',
+        stroke: BIN.b6,
+        'stroke-width': 1.4,
+        'stroke-linecap': 'round',
+      },
+      riderOnBike
+    );
+
+    function makeWalker(parent: Element) {
+      const g = el('g', { opacity: 0 }, parent);
+      el('circle', { cx: 0, cy: -23, r: 3.6, fill: BIN.b6 }, g);
+      el('path', { d: 'M 0 -19.4 L 0 -9', stroke: BIN.b6, 'stroke-width': 1.5, 'stroke-linecap': 'round' }, g);
+      const mk = (w: number) =>
+        el('path', { stroke: BIN.b6, 'stroke-width': w, 'stroke-linecap': 'round' }, g);
+      return { g, aL: mk(1.3), aR: mk(1.3), lL: mk(1.5), lR: mk(1.5) };
+    }
+    type Walker = ReturnType<typeof makeWalker>;
+    function poseWalker(w: Walker, phase: number, moving: boolean) {
+      const sw = moving ? Math.sin(phase) * 4.2 : 0;
+      w.lL.setAttribute('d', `M 0 -9 L ${(-2.6 - sw).toFixed(1)} 0`);
+      w.lR.setAttribute('d', `M 0 -9 L ${(2.6 + sw).toFixed(1)} 0`);
+      w.aL.setAttribute('d', `M 0 -17 L ${(-3.4 + sw * 0.7).toFixed(1)} -11`);
+      w.aR.setAttribute('d', `M 0 -17 L ${(3.4 - sw * 0.7).toFixed(1)} -11`);
+    }
+    const walkerHome = makeWalker(gProps);
+    const walkerAz = makeWalker(gProps);
+
+    const shipG = el('g', { opacity: 0 }, gProps);
+    const shipShadow = el('ellipse', { cx: 0, cy: 2, rx: 52, ry: 8, fill: '#000', opacity: 0.45 }, shipG);
+    const shipBody = el('g', {}, shipG);
+    const wingStyle = { stroke: BIN.b5, 'stroke-width': 1.6, 'stroke-linejoin': 'round' };
+    el('path', { d: 'M 20 -14 L 2 -52 L -26 -52 L -24 -14 Z', fill: BIN.b3, ...wingStyle }, shipBody);
+    el('path', { d: 'M 2 -52 L -6 -66 L -24 -66 L -26 -52 Z', fill: BIN.b4, ...wingStyle }, shipBody);
+    el(
+      'path',
+      {
+        d: 'M 70 -22 L 34 -30 L -34 -34 L -46 -30 L -46 -14 L -34 -10 L 34 -14 Z',
+        fill: INK,
+        stroke: '#a6aebb',
+        'stroke-width': 2,
+        'stroke-linejoin': 'round',
+      },
+      shipBody
+    );
+    el('path', { d: 'M 30 -26 L -36 -29', stroke: BIN.b6, 'stroke-width': 2.4, opacity: 0.9 }, shipBody);
+    el(
+      'path',
+      { d: 'M 22 -22 L -2 -28 L -12 -22 L -2 -17 Z', fill: BIN.b5, stroke: INK, 'stroke-width': 1.2 },
+      shipBody
+    );
+    el('rect', { x: -52, y: -27, width: 9, height: 7, rx: 2, fill: '#7f93b8' }, shipBody);
+    el('rect', { x: -52, y: -19, width: 9, height: 7, rx: 2, fill: '#7f93b8' }, shipBody);
+    const hullText = el(
+      'text',
+      {
+        x: -4,
+        y: -17.5,
+        'text-anchor': 'middle',
+        fill: '#0d0f12',
+        'font-size': 7.4,
+        'letter-spacing': '1.6',
+        class: 'leap-label',
+      },
+      shipBody
+    );
+    hullText.textContent = 'AI AGENT';
+    const shipStruts = el(
+      'path',
+      {
+        d: 'M -16 -12 L -20 2 M 16 -14 L 20 2 M -28 2 L -12 2 M 12 2 L 28 2',
+        stroke: '#a6aebb',
+        'stroke-width': 2.2,
+        'stroke-linecap': 'round',
+      },
+      shipG
+    );
+    const liftFlame = el('ellipse', { cx: -58, cy: -23, rx: 26, ry: 7, fill: 'url(#leapGlow)', opacity: 0 }, shipG);
+
+    const rearG = el('g', {}, gShipR);
+    const rf1 = el('ellipse', { cx: -13, cy: 9, rx: 11, ry: 6, fill: 'url(#leapGlow)' }, rearG);
+    const rf2 = el('ellipse', { cx: 13, cy: 9, rx: 11, ry: 6, fill: 'url(#leapGlow)' }, rearG);
+    const rw = { stroke: BIN.b5, 'stroke-width': 1.4, 'stroke-linejoin': 'round' };
+    el('path', { d: 'M -46 -2 L -16 -8 L -16 6 L -44 8 Z', fill: BIN.b3, ...rw }, rearG);
+    el('path', { d: 'M  46 -2 L  16 -8 L  16 6 L  44 8 Z', fill: BIN.b3, ...rw }, rearG);
+    el('path', { d: 'M -46 -2 L -50 -14 L -34 -14 L -30 -5 Z', fill: BIN.b4, ...rw }, rearG);
+    el('path', { d: 'M  46 -2 L  50 -14 L  34 -14 L  30 -5 Z', fill: BIN.b4, ...rw }, rearG);
+    el(
+      'path',
+      { d: 'M -18 -10 L 18 -10 L 15 7 L -15 7 Z', fill: INK, stroke: '#a6aebb', 'stroke-width': 1.6, 'stroke-linejoin': 'round' },
+      rearG
+    );
+    el('path', { d: 'M -13 -8 L 13 -8', stroke: BIN.b6, 'stroke-width': 2 }, rearG);
+    el('rect', { x: -19, y: 0, width: 9, height: 7, rx: 2, fill: '#7f93b8' }, rearG);
+    el('rect', { x: 10, y: 0, width: 9, height: 7, rx: 2, fill: '#7f93b8' }, rearG);
+    rearG.appendChild(rf1);
+    rearG.appendChild(rf2);
+
+    el(
+      'path',
+      {
+        d: 'M 0 0 H 1200 V 720 H 0 Z M 150 120 Q 600 40 1050 120 L 1120 470 Q 600 560 80 470 Z',
+        fill: '#0a0f1a',
+        'fill-rule': 'evenodd',
+      },
+      gCock
+    );
+    el(
+      'path',
+      { d: 'M 150 120 Q 600 40 1050 120 L 1120 470 Q 600 560 80 470 Z', fill: 'none', stroke: '#6f88b4', 'stroke-width': 7 },
+      gCock
+    );
+    el('path', { d: 'M 600 52 L 600 552', stroke: '#6f88b4', 'stroke-width': 6, opacity: 0.85 }, gCock);
+    el('path', { d: 'M 150 120 L 80 470 M 1050 120 L 1120 470', stroke: '#6f88b4', 'stroke-width': 5, opacity: 0.7 }, gCock);
+    el('rect', { x: 0, y: 470, width: 1200, height: 250, fill: '#0a0f1a' }, gCock);
+    el('rect', { x: 330, y: 500, width: 540, height: 120, rx: 2, fill: '#14171c', stroke: '#2a313b', 'stroke-width': 2 }, gCock);
+    const hudLabel = el(
+      'text',
+      { x: 600, y: 530, 'text-anchor': 'middle', fill: BIN.b3, 'font-size': 17, 'letter-spacing': '2', class: 'leap-mono' },
+      gCock
+    );
+    hudLabel.textContent = 'APPROACH — AZURE';
+    el('rect', { x: 370, y: 548, width: 460, height: 12, rx: 2, fill: '#1b2740' }, gCock);
+    const fuelBar = el('rect', { x: 370, y: 548, width: 460, height: 12, rx: 2, fill: BIN.b6 }, gCock);
+    const fuelTxt = el('text', { x: 370, y: 588, fill: DIM, 'font-size': 13, class: 'leap-mono' }, gCock);
+    fuelTxt.textContent = 'FUEL';
+    const altTxt = el('text', { x: 830, y: 588, 'text-anchor': 'end', fill: DIM, 'font-size': 13, class: 'leap-mono' }, gCock);
+    const flash = el('rect', { x: 0, y: 0, width: 1200, height: 720, fill: '#dff1ff', opacity: 0 }, gFlash);
+
+    const CAMKEYS = [
+      { t: 0, pos: [-34, 30, -46] as Vec, tgt: [-6, 6, 74] as Vec },
+      { t: 7, pos: [26, 26, -30] as Vec, tgt: [8, 6, 86] as Vec },
+      { t: 9.2, pos: [40, 20, 6] as Vec, tgt: [16, 6, 92] as Vec },
+      { t: 12.4, pos: [52, 17, 22] as Vec, tgt: [22, 7, 96] as Vec },
+      { t: 14, pos: [60, 22, 14] as Vec, tgt: [20, 12, 92] as Vec },
+    ];
+    const flightFrac = (t: number) => clamp((t - T_LAUNCH) / (T_TOUCH - T_LAUNCH), 0, 1);
+
+    function camAt(t: number) {
+      if (t < T_LAUNCH) {
+        let a = CAMKEYS[0],
+          b = CAMKEYS[0];
+        for (let i = 0; i < CAMKEYS.length - 1; i++)
+          if (t <= CAMKEYS[i + 1].t) {
+            a = CAMKEYS[i];
+            b = CAMKEYS[i + 1];
+            break;
+          }
+        if (t >= CAMKEYS[CAMKEYS.length - 1].t) a = b = CAMKEYS[CAMKEYS.length - 1];
+        const s = a === b ? 0 : ease((t - a.t) / (b.t - a.t));
+        return { pos: lerp3(a.pos, b.pos, s), tgt: lerp3(a.tgt, b.tgt, s) };
+      }
+      if (t >= T_TOUCH) {
+        const k = ease(clamp((t - T_TOUCH) / (DUR - T_TOUCH), 0, 1));
+        return {
+          pos: lerp3([-10, 26, 4], [16, 22, 18], k),
+          tgt: lerp3([18, 6, 92], [38, 6, 104], k),
+        };
+      }
+      const s = flightFrac(t);
+      const p = flyAt(s),
+        ahead = flyAt(Math.min(s + 0.012, 1));
+      const fwd = norm(sub(ahead, p));
+      if (t < T_COCK) {
+        const k = smooth(T_LAUNCH, T_LAUNCH + 2.2, t);
+        return { pos: add(sub(p, mul(fwd, lerp(38, 150, k))), [0, lerp(14, 34, k), 0]), tgt: add(p, mul(fwd, 240)) };
+      }
+      /* Swing the nose onto the destination — looking straight down the path
+         tangent leaves Azure off in the corner. */
+      const aim = lerp3(add(p, mul(fwd, 260)), PLANETS[4].pos, smooth(T_COCK, T_COCK + 2.4, t) * 0.92);
+      return { pos: add(p, mul(fwd, 6)), tgt: aim };
+    }
+
+    function view(pos: Vec, target: Vec) {
+      const fwd = norm(sub(target, pos));
+      const right = norm(cross(fwd, [0, 1, 0]));
+      return { pos, fwd, right, up: cross(right, fwd) };
+    }
+    type V = ReturnType<typeof view>;
+    function proj(Vw: V, p: Vec): [number, number, number, number] | null {
+      const d = sub(p, Vw.pos);
+      const z = dot(d, Vw.fwd);
+      if (z <= 1) return null;
+      return [CX + (F * dot(d, Vw.right)) / z, CY - (F * dot(d, Vw.up)) / z, z, F / z];
+    }
+
+    const terrainVisible = (t: number) => t < T_LAUNCH || t > T_TOUCH;
+
+    function render(t: number) {
+      const c = camAt(t);
+      const Vw = view(c.pos, c.tgt);
+      const onAzure = t > T_TOUCH;
+      const hf = onAzure ? hAzure : hHome;
+
+      gStars.setAttribute('opacity', smooth(T_LAUNCH - 0.1, T_LAUNCH + 1.2, t).toFixed(3));
+      if (t > T_LAUNCH - 0.4) {
+        for (const s of STARS) {
+          const q = proj(Vw, s.p);
+          if (!q || q[0] < -60 || q[0] > 1260 || q[1] < -60 || q[1] > 780) {
+            s.el.setAttribute('r', '0');
+            continue;
+          }
+          s.el.setAttribute('cx', q[0].toFixed(1));
+          s.el.setAttribute('cy', q[1].toFixed(1));
+          s.el.setAttribute('r', clamp(s.b * q[3] * 80, 0.3, 2.6).toFixed(2));
+          s.el.setAttribute('opacity', clamp(q[3] * 260, 0.15, 0.95).toFixed(2));
+        }
+      } else for (const s of STARS) s.el.setAttribute('r', '0');
+
+      gSpace.setAttribute(
+        'opacity',
+        (smooth(T_LAUNCH - 0.3, T_LAUNCH + 1.8, t) * (1 - smooth(T_TOUCH - 0.2, T_TOUCH + 0.5, t))).toFixed(3)
+      );
+      const vis: { p: P; q: [number, number, number, number]; R: number }[] = [];
+      for (const p of ALL) {
+        /* While the terrain is on screen we are standing on the home world;
+           its disc would blanket the frame. */
+        if (p === (HOMEP as P) && t < T_LAUNCH + 0.6) {
+          p.g!.setAttribute('display', 'none');
+          continue;
+        }
+        const q = proj(Vw, p.pos);
+        if (!q) {
+          p.g!.setAttribute('display', 'none');
+          continue;
+        }
+        const R = p.r * q[3];
+        if (R < 0.6 || q[0] < -2200 || q[0] > 3400) {
+          p.g!.setAttribute('display', 'none');
+          continue;
+        }
+        p.g!.removeAttribute('display');
+        vis.push({ p, q, R });
+      }
+      vis.sort((a, b) => b.q[2] - a.q[2]);
+      for (const v of vis) {
+        v.p.g!.setAttribute('transform', `translate(${v.q[0].toFixed(1)} ${v.q[1].toFixed(1)})`);
+        gSpace.appendChild(v.p.g!);
+        v.p.base!.setAttribute('r', v.R.toFixed(1));
+        v.p.disc!.setAttribute('r', v.R.toFixed(1));
+        v.p.rim!.setAttribute('r', v.R.toFixed(1));
+        v.p.rim!.setAttribute('stroke-width', Math.max(v.R * 0.018, 0.7).toFixed(2));
+        drawMotif(v.p, v.R);
+        const fs = clamp(v.R * 0.26, 9, 46);
+        /* A planet big enough to fill the frame would push its own name off
+           screen — keep the label inside the picture. */
+        const ly = Math.min(v.R + fs * 1.5, Math.max(300 - v.q[1], -v.q[1] + 300));
+        v.p.label!.setAttribute('y', ly.toFixed(1));
+        v.p.label!.setAttribute('font-size', fs.toFixed(1));
+        v.p.label!.setAttribute('opacity', clamp((v.R - 14) / 60, 0, 1).toFixed(2));
+      }
+
+      const tvis = terrainVisible(t);
+      setShown(gTerr, tvis);
+      setShown(gHaze, tvis);
+      if (tvis) {
+        const fade = t < T_LAUNCH ? 1 - smooth(T_LAUNCH - 0.9, T_LAUNCH, t) : smooth(T_TOUCH, T_TOUCH + 1, t);
+        gTerr.setAttribute('opacity', fade.toFixed(3));
+        gHaze.setAttribute('opacity', (fade * 0.9).toFixed(3));
+        for (const q of QUADS) {
+          const { i, j } = q;
+          const corners: Vec[] = [
+            [gx(i), 0, gz(j)],
+            [gx(i + 1), 0, gz(j)],
+            [gx(i + 1), 0, gz(j + 1)],
+            [gx(i), 0, gz(j + 1)],
+          ];
+          let d = '',
+            ok = true,
+            hs = 0;
+          for (let k = 0; k < 4; k++) {
+            const h = hf(corners[k][0], corners[k][2]);
+            hs += h;
+            const s = proj(Vw, [corners[k][0], h, corners[k][2]]);
+            if (!s) {
+              ok = false;
+              break;
+            }
+            d += (k ? 'L' : 'M') + s[0].toFixed(1) + ' ' + s[1].toFixed(1) + ' ';
+          }
+          if (!ok) {
+            q.el.setAttribute('d', '');
+            continue;
+          }
+          const sh = clamp((hs / 4 + 4) / 24, 0, 1);
+          q.el.setAttribute('d', d + 'Z');
+          q.el.setAttribute('fill', mix('#0f1720', onAzure ? BIN.b2 : BIN.b4, sh * 0.8));
+        }
+        for (const c2 of CONTOURS) {
+          let d = '',
+            ok = true;
+          for (let i = 0; i <= COLS * 2; i++) {
+            const x = lerp(TX0, TX1, i / (COLS * 2)),
+              z = gz(c2.j);
+            const s = proj(Vw, [x, hf(x, z), z]);
+            if (!s) {
+              ok = false;
+              break;
+            }
+            d += (i ? 'L' : 'M') + s[0].toFixed(1) + ' ' + s[1].toFixed(1) + ' ';
+          }
+          c2.el.setAttribute('d', ok ? d : '');
+        }
+        const far = proj(Vw, [0, hf(0, TZ1), TZ1]);
+        if (far) {
+          hz.setAttribute('cx', far[0].toFixed(1));
+          hz.setAttribute('cy', far[1].toFixed(1));
+          hz.setAttribute('rx', (F * 0.42).toFixed(0));
+          hz.setAttribute('ry', '52');
+        }
+      }
+
+      setShown(gProps, tvis);
+      if (tvis) {
+        gProps.setAttribute('opacity', gTerr.getAttribute('opacity') || '1');
+        NODEG.forEach((ng, k) => {
+          if (onAzure) {
+            ng.g.setAttribute('display', 'none');
+            return;
+          }
+          const n = NODES[k],
+            s = proj(Vw, [n.x, hf(n.x, n.z), n.z]);
+          if (!s) {
+            ng.g.setAttribute('display', 'none');
+            return;
+          }
+          ng.g.removeAttribute('display');
+          /* Cap the near-field scale, or a landmark the camera drifts up to
+             swells until its label alone fills the frame. */
+          ng.g.setAttribute(
+            'transform',
+            `translate(${s[0].toFixed(1)} ${s[1].toFixed(1)}) scale(${clamp(s[3] * S_NODE, 0, 2.4).toFixed(3)})`
+          );
+        });
+
+        const showBike = !onAzure && t < T_BOARD;
+        setShown(bikeG, showBike);
+        if (showBike) {
+          const riding = t < T_OFF;
+          const bt = clamp(t / T_RIDE, 0, 1);
+          const route = [
+            { x: -40, z: 78 },
+            { x: 16, z: 146 },
+            { x: 56, z: 70 },
+            { x: 24, z: 64 },
+          ];
+          const seg = clamp(bt * 3, 0, 2.9999);
+          const i = Math.floor(seg),
+            f = ease(seg - i);
+          const a = route[i],
+            b = route[i + 1];
+          const bx = lerp(a.x, b.x, f),
+            bz = lerp(a.z, b.z, f);
+          const bx2 = lerp(a.x, b.x, Math.min(f + 0.03, 1)),
+            bz2 = lerp(a.z, b.z, Math.min(f + 0.03, 1));
+          const by = hf(bx, bz);
+          const s = proj(Vw, [bx, by, bz]);
+          if (s) {
+            const dl = Math.hypot(bx2 - bx, bz2 - bz) || 1;
+            const pitch = (-Math.atan2(hf(bx2, bz2) - by, dl) * 180) / Math.PI;
+            const bank = (i === 1 ? -9 : i === 2 ? 7 : 3) * (riding ? 1 : 0);
+            const bob = riding ? Math.sin(t * 11) * 1.1 : 0;
+            const nxt = proj(Vw, [bx2, hf(bx2, bz2), bz2]);
+            const dir = nxt && nxt[0] >= s[0] ? 1 : -1;
+            const sc = s[3] * S_BIKE;
+            bikeG.setAttribute(
+              'transform',
+              `translate(${s[0].toFixed(1)} ${(s[1] + bob).toFixed(1)}) scale(${(sc * dir).toFixed(3)} ${sc.toFixed(3)})`
+            );
+            bikeTilt.setAttribute('transform', `rotate(${clamp(pitch, -18, 18).toFixed(1)})`);
+            bikeLean.setAttribute('transform', `rotate(${bank.toFixed(1)})`);
+            spokes.setAttribute('transform', riding ? `rotate(${(t * 420).toFixed(0)} -7 -6)` : '');
+            bikeShadow.setAttribute('opacity', '0.4');
+            riderOnBike.setAttribute('opacity', riding ? '1' : '0');
+          }
+        }
+
+        if (!onAzure && t >= T_OFF && t < T_BOARD + 0.5) {
+          const k = clamp((t - T_OFF) / (T_BOARD - T_OFF), 0, 1);
+          const wx = lerp(24, 44, ease(k)),
+            wz = lerp(64, 70, ease(k));
+          const s = proj(Vw, [wx, hf(wx, wz), wz]);
+          if (s) {
+            walkerHome.g.setAttribute('opacity', (1 - smooth(T_BOARD - 0.4, T_BOARD + 0.3, t)).toFixed(2));
+            walkerHome.g.setAttribute(
+              'transform',
+              `translate(${s[0].toFixed(1)} ${s[1].toFixed(1)}) scale(${(s[3] * S_WALK).toFixed(3)})`
+            );
+            poseWalker(walkerHome, t * 9, k < 0.96);
+          }
+        } else walkerHome.g.setAttribute('opacity', '0');
+
+        const shipShown = (!onAzure && t > T_OFF - 0.6 && t < T_LAUNCH) || onAzure;
+        shipG.setAttribute(
+          'opacity',
+          shipShown
+            ? (onAzure ? smooth(T_TOUCH, T_TOUCH + 0.8, t) : smooth(T_OFF - 0.6, T_OFF + 0.8, t)).toFixed(2)
+            : '0'
+        );
+        if (shipShown) {
+          const gx0 = onAzure ? 18 : 44,
+            gz0 = onAzure ? 86 : 72;
+          /* Only ~65 units from the camera, so a big lift throws it clean off
+             the top of the frame; 18 units already reads as a decisive climb. */
+          const lift =
+            !onAzure && t > T_LAUNCH - 1.3 ? Math.pow(clamp((t - (T_LAUNCH - 1.3)) / 1.3, 0, 1), 2) * 18 : 0;
+          const s = proj(Vw, [gx0, hf(gx0, gz0) + lift, gz0]);
+          if (s) {
+            shipG.setAttribute(
+              'transform',
+              `translate(${s[0].toFixed(1)} ${s[1].toFixed(1)}) scale(${(s[3] * S_SHIP).toFixed(3)})`
+            );
+            shipStruts.setAttribute('opacity', lift > 2 ? '0' : '1');
+            shipShadow.setAttribute('opacity', lift > 2 ? '0' : '0.45');
+            liftFlame.setAttribute('opacity', lift > 2 ? '0.9' : '0');
+          }
+        }
+
+        if (onAzure) {
+          const k = clamp((t - T_TOUCH - 1.2) / 3, 0, 1);
+          const wx = lerp(30, 64, k),
+            wz = lerp(84, 72, k);
+          const s = proj(Vw, [wx, hf(wx, wz), wz]);
+          if (s) {
+            walkerAz.g.setAttribute('opacity', clamp(k * 5, 0, 1).toFixed(2));
+            walkerAz.g.setAttribute(
+              'transform',
+              `translate(${s[0].toFixed(1)} ${s[1].toFixed(1)}) scale(${(s[3] * S_WALK).toFixed(3)})`
+            );
+            poseWalker(walkerAz, t * 9, k < 0.98);
+          }
+        } else walkerAz.g.setAttribute('opacity', '0');
+      }
+
+      const chase = t >= T_LAUNCH && t < T_COCK;
+      gShipR.setAttribute(
+        'opacity',
+        chase ? (smooth(T_LAUNCH, T_LAUNCH + 0.7, t) * (1 - smooth(T_COCK - 0.9, T_COCK, t))).toFixed(2) : '0'
+      );
+      if (chase) {
+        const s = flightFrac(t);
+        const p = flyAt(s),
+          q = proj(Vw, p);
+        if (q) {
+          const q2 = proj(Vw, flyAt(Math.min(s + 0.02, 1)));
+          const yaw = q2 ? clamp((q2[0] - q[0]) * 0.05, -14, 14) : 0;
+          gShipR.setAttribute(
+            'transform',
+            `translate(${q[0].toFixed(1)} ${q[1].toFixed(1)}) rotate(${yaw.toFixed(1)}) scale(${clamp(q[3] * 150, 0.4, 3.2).toFixed(3)})`
+          );
+          const fl = (0.7 + 0.3 * Math.sin(t * 22)).toFixed(2);
+          rf1.setAttribute('opacity', fl);
+          rf2.setAttribute('opacity', fl);
+        }
+      }
+
+      const inCock = t >= T_COCK - 0.4;
+      gCock.setAttribute(
+        'opacity',
+        inCock ? (smooth(T_COCK - 0.4, T_COCK + 0.6, t) * (1 - smooth(T_TOUCH - 0.3, T_TOUCH + 0.4, t))).toFixed(2) : '0'
+      );
+      if (inCock) {
+        const az = proj(Vw, PLANETS[4].pos);
+        const alt = az ? Math.max(0, az[2] - PLANETS[4].r) : 0;
+        altTxt.textContent = 'ALT ' + Math.round(alt).toString().padStart(4, '0');
+        const fuel = 1 - flightFrac(t) * 0.82;
+        fuelBar.setAttribute('width', (460 * fuel).toFixed(0));
+        fuelBar.setAttribute('fill', fuel < 0.3 ? '#ff8a6b' : BIN.b6);
+      }
+      flash.setAttribute(
+        'opacity',
+        t > T_TOUCH - 0.35 && t < T_TOUCH + 0.5 ? ((1 - Math.abs(t - T_TOUCH) / 0.45) * 0.85).toFixed(2) : '0'
+      );
+
+      const here: Vec = t < T_LAUNCH ? [0, 0, 70] : flyAt(flightFrac(t));
+      const d = Math.hypot(here[0], here[1], here[2] - 70);
+      distEl.textContent = Math.round(d).toLocaleString();
+      reachEl.textContent = (1 + d / BIKE_RANGE).toFixed(d < BIKE_RANGE ? 1 : 0) + '×';
+      let ch = CHAPTERS[0];
+      for (const c2 of CHAPTERS) if (t >= c2.t) ch = c2;
+      titleEl.textContent = ch.title;
+      textEl.textContent = ch.text;
+    }
+
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+    let t = 0,
+      playing = !reduce.matches,
+      last = performance.now(),
+      raf = 0;
+
+    function setLabel() {
+      toggle.textContent = playing ? 'Pause' : 'Play';
+      toggle.setAttribute('aria-label', playing ? 'Pause animation' : 'Play animation');
+    }
+    function tick() {
+      const now = performance.now();
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
+      if (playing) {
+        t += dt;
+        if (t >= DUR) t = 0;
+        render(t);
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    toggle.addEventListener('click', () => {
+      playing = !playing;
+      last = performance.now();
+      setLabel();
+      if (playing && !raf) tick();
+    });
+
+    /* Pause when off screen: no point animating what nobody is looking at. */
+    let onScreen = true;
+    new IntersectionObserver(
+      (entries) => {
+        onScreen = entries[0].isIntersecting;
+        if (!onScreen && raf) {
+          cancelAnimationFrame(raf);
+          raf = 0;
+        } else if (onScreen && playing && !raf) {
+          last = performance.now();
+          tick();
+        }
+      },
+      { threshold: 0.05 }
+    ).observe(root);
+
+    setLabel();
+    if (playing) {
+      render(0);
+      tick();
+    } else {
+      render(STILL_T);
+    }
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-agent-leap]').forEach(build);
+</script>
