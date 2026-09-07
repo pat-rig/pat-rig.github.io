@@ -4,12 +4,22 @@
  * the planets, a cockpit landing. One 3D camera throughout — position, look-at
  * and focal length — so every act shares a single space.
  *
- * Presentation follows docs/design.md rather than inventing its own look:
+ * Two treatments, switched by `theme`:
  *
- * - It sits on `--board`, the token the design system reserves for a
- *   visualisation ground ("not a page surface"). No border and no radius: a
- *   bordered rounded plate is the anti-pattern the design doc names, and the
- *   figure rule says a box "would read as a widget pasted into the article".
+ *   paper — the default. No plate at all: the scene is drawn as ink on the page
+ *           ground, the way the other figures on this site sit. There is no
+ *           starfield, because specks of ink on cream read as dust rather than
+ *           as stars — empty paper is the void, and leaving it empty is what
+ *           makes the treatment work.
+ *   board — the dark plate on `--board`, the token the design system reserves
+ *           for a visualisation ground. Keeps the night, the engine glow and
+ *           the lit cockpit, at the cost of a visible edge against the page.
+ *
+ * Both follow docs/design.md rather than inventing a look:
+ *
+ * - No border, no radius, no shadow. A bordered rounded plate is the
+ *   anti-pattern the design doc names, and the figure rule says a box "would
+ *   read as a widget pasted into the article".
  * - It runs edge to edge, so it is plainly a band the page passes through
  *   rather than an embed sitting inside the text column. The frame is a
  *   cinematic 2:1: at 5:3 a full-width band is taller than the viewport and the
@@ -24,9 +34,13 @@
  * Motion: under `prefers-reduced-motion: reduce` nothing animates and nothing
  * is scheduled — a single frame is drawn and a button offers to play it.
  */
+interface Props {
+  theme?: 'paper' | 'board';
+}
+const { theme = 'paper' } = Astro.props;
 ---
 
-<figure class="leap" data-agent-leap>
+<figure class:list={['leap', `leap--${theme}`]} data-agent-leap data-leap-theme={theme}>
   <div class="leap__plate">
     <svg
       class="leap__svg"
@@ -70,9 +84,17 @@
 
   .leap__plate {
     position: relative;
-    background: var(--board);
     /* No border, no radius, no shadow — see the note above. */
     border-radius: var(--radius-0);
+  }
+
+  /* Ink on the page ground: no plate, nothing to separate figure from page. */
+  .leap--paper .leap__plate {
+    background: transparent;
+  }
+
+  .leap--board .leap__plate {
+    background: var(--board);
   }
 
   .leap__svg {
@@ -81,9 +103,8 @@
     height: auto;
     /*
      * Keep the whole composition, and the readouts sitting on it, inside one
-     * screenful. When this binds the scene letterboxes horizontally — and the
-     * bars are the plate's own `--board`, so the seam is invisible and the band
-     * still runs edge to edge.
+     * screenful. When this binds the scene letterboxes horizontally, into the
+     * plate's own ground — so the seam is invisible either way.
      */
     max-height: 78vh;
   }
@@ -111,11 +132,19 @@
   .leap__chapter b {
     display: block;
     font-size: var(--step--1);
+    color: var(--text-0);
+  }
+
+  .leap--board .leap__chapter b {
     color: #e7eaee;
   }
 
   .leap__chapter span {
     font-size: var(--step--1);
+    color: var(--text-1);
+  }
+
+  .leap--board .leap__chapter span {
     color: #a6aebb;
   }
 
@@ -124,13 +153,21 @@
     font-size: var(--step--1);
     line-height: 1.35;
     text-align: right;
-    color: #8c95a3;
+    color: var(--text-2);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
 
+  .leap--board .leap__readout {
+    color: #8c95a3;
+  }
+
   .leap__readout em {
     font-style: normal;
+    color: var(--text-0);
+  }
+
+  .leap--board .leap__readout em {
     color: #fde725;
   }
 
@@ -141,14 +178,19 @@
     font: inherit;
     font-size: var(--step--1);
     font-family: var(--font-mono);
-    color: #e7eaee;
+    color: var(--text-1);
     background: transparent;
-    border: 1px solid #626c79;
+    border: 1px solid var(--line-strong);
     border-radius: var(--radius-1);
     padding: var(--space-1) var(--space-3);
     cursor: pointer;
     opacity: 0;
     transition: opacity var(--dur-2) var(--ease);
+  }
+
+  .leap--board .leap__toggle {
+    color: #e7eaee;
+    border-color: #626c79;
   }
 
   .leap__plate:hover .leap__toggle,
@@ -233,8 +275,34 @@
     b5: '#5ec962',
     b6: '#fde725',
   };
-  const INK = '#e7eaee';
-  const DIM = '#8c95a3';
+  /*
+   * Every colour the scene uses, per treatment. Named by role rather than by
+   * value so the two themes stay in step: anything added here has to be given a
+   * meaning in both, which is what stops the paper version quietly inheriting a
+   * near-black from the dark one.
+   */
+  const THEMES = {
+    board: {
+      ink: '#e7eaee', dim: '#8c95a3', outline: '#a6aebb', metal: '#7f93b8',
+      void: '#05070e', panel: '#141a24',
+      terrLow: '#0f1720', terrHigh: BIN.b4, terrStroke: BIN.b3, contour: BIN.b5,
+      cockFill: '#0a0f1a', cockFrame: '#6f88b4', hudFill: '#14171c',
+      hudStroke: '#2a313b', gaugeTrack: '#1b2740', flash: '#dff1ff',
+      hullFill: '#e7eaee', planetFill: 0.18, stars: true, glow: 0.9,
+      accent: BIN.b6, haze: 0.3, monoPlanets: false,
+      wing: BIN.b3, wingLit: BIN.b4, wingEdge: BIN.b5, canopy: BIN.b5,
+    },
+    paper: {
+      ink: '#1f1b14', dim: '#645d47', outline: '#1f1b14', metal: '#7d7157',
+      void: '#f4f1ea', panel: '#ece7dc',
+      terrLow: '#f4f1ea', terrHigh: BIN.b3, terrStroke: '#1f1b14', contour: '#55503f',
+      cockFill: '#f4f1ea', cockFrame: '#1f1b14', hudFill: '#ece7dc',
+      hudStroke: '#d3c9b4', gaugeTrack: '#e1dacb', flash: '#ffffff',
+      hullFill: '#f4f1ea', planetFill: 0.1, stars: false, glow: 0.28,
+      accent: BIN.b1, haze: 0.12, monoPlanets: true,
+      wing: '#e1dacb', wingLit: '#d3c9b4', wingEdge: '#1f1b14', canopy: BIN.b1,
+    },
+  } as const;
 
   const CX = 600,
     CY = 300,
@@ -295,7 +363,9 @@
     return `rgb(${c(r1, r2)} ${c(g1, g2)} ${c(b1, b2)})`;
   }
 
-  const HOMEP = { pos: [0, -330, 80] as Vec, r: 300, c: DIM, name: 'my laptop' };
+  /* `c` is filled in per treatment in build() — the home world is drawn in the
+     scene's own neutral rather than one of the accent bins. */
+  const HOMEP = { pos: [0, -330, 80] as Vec, r: 300, c: '#8c95a3', name: 'my laptop' };
   const PLANETS = [
     { name: 'CI / CD', pos: [-400, 60, 980] as Vec, r: 120, c: BIN.b6, motif: 'arcs' },
     { name: 'Databases', pos: [480, -80, 1760] as Vec, r: 145, c: BIN.b4, motif: 'discs' },
@@ -371,6 +441,17 @@
   }
 
   function build(root: HTMLElement) {
+    const T = THEMES[root.dataset.leapTheme === 'board' ? 'board' : 'paper'];
+    const INK = T.ink,
+      DIM = T.dim;
+    HOMEP.c = T.dim;
+    /*
+     * On paper every planet is drawn in ink and told apart by its motif and its
+     * label. The light end of viridis — the yellows and greens the dark
+     * treatment leans on — has almost no contrast against cream, so colour
+     * cannot carry the distinction here and the motifs have to.
+     */
+    if (T.monoPlanets) for (const p of PLANETS) p.c = T.ink;
     const svg = root.querySelector('.leap__svg') as SVGSVGElement;
     const titleEl = root.querySelector('[data-leap-title]') as HTMLElement;
     const textEl = root.querySelector('[data-leap-text]') as HTMLElement;
@@ -403,17 +484,17 @@
 
     const defs = el('defs', {}, svg);
     const glow = el('radialGradient', { id: 'leapGlow' }, defs);
-    el('stop', { offset: '0%', 'stop-color': BIN.b6, 'stop-opacity': '0.9' }, glow);
+    el('stop', { offset: '0%', 'stop-color': T.accent, 'stop-opacity': String(T.glow) }, glow);
     el('stop', { offset: '100%', 'stop-color': BIN.b6, 'stop-opacity': '0' }, glow);
     const haze = el('radialGradient', { id: 'leapHaze' }, defs);
-    el('stop', { offset: '0%', 'stop-color': BIN.b3, 'stop-opacity': '0.30' }, haze);
-    el('stop', { offset: '100%', 'stop-color': BIN.b3, 'stop-opacity': '0' }, haze);
+    el('stop', { offset: '0%', 'stop-color': T.monoPlanets ? T.dim : BIN.b3, 'stop-opacity': String(T.haze) }, haze);
+    el('stop', { offset: '100%', 'stop-color': T.monoPlanets ? T.dim : BIN.b3, 'stop-opacity': '0' }, haze);
     for (const p of [...PLANETS, HOMEP]) {
       const id = 'leapP' + p.name.replace(/\W/g, '');
       const rg = el('radialGradient', { id, cx: '0.36', cy: '0.32', r: '0.78' }, defs);
-      el('stop', { offset: '0%', 'stop-color': p.c, 'stop-opacity': '0.62' }, rg);
-      el('stop', { offset: '62%', 'stop-color': p.c, 'stop-opacity': '0.20' }, rg);
-      el('stop', { offset: '100%', 'stop-color': '#05070e', 'stop-opacity': '0.92' }, rg);
+      el('stop', { offset: '0%', 'stop-color': p.c, 'stop-opacity': String(T.planetFill * 3.4) }, rg);
+      el('stop', { offset: '62%', 'stop-color': p.c, 'stop-opacity': String(T.planetFill) }, rg);
+      el('stop', { offset: '100%', 'stop-color': T.void, 'stop-opacity': '0.92' }, rg);
       (p as { grad?: string }).grad = `url(#${id})`;
     }
 
@@ -429,7 +510,7 @@
     let seed = 11;
     const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
     const STARS: { p: Vec; b: number; el: Element }[] = [];
-    for (let i = 0; i < 420; i++)
+    for (let i = 0; T.stars && i < 420; i++)
       STARS.push({
         p: [(rnd() - 0.5) * 5200, (rnd() - 0.5) * 3200, rnd() * 5600 - 400],
         b: 0.7 + rnd() * 2.1,
@@ -450,8 +531,8 @@
       p.g = el('g', {}, gSpace);
       /* Solid base first: the gradient alone is ~20% opaque mid-disc, and the
          starfield behind would otherwise shine straight through the planet. */
-      p.base = el('circle', { cx: 0, cy: 0, r: 1, fill: '#05070e' }, p.g);
-      p.disc = el('circle', { cx: 0, cy: 0, r: 1, fill: p.grad! }, p.g);
+      p.base = el('circle', { cx: 0, cy: 0, r: 1, fill: T.void }, p.g);
+      p.disc = el('circle', { cx: 0, cy: 0, r: 1, fill: T.monoPlanets ? 'none' : p.grad! }, p.g);
       p.rim = el(
         'circle',
         { cx: 0, cy: 0, r: 1, fill: 'none', stroke: p.c, 'stroke-width': 2, opacity: 0.9 },
@@ -515,7 +596,7 @@
           j,
           el: el(
             'path',
-            { d: '', stroke: BIN.b3, 'stroke-width': 0.5, 'stroke-opacity': 0.28 },
+            { d: '', stroke: T.terrStroke, 'stroke-width': 0.5, 'stroke-opacity': 0.28 },
             gTerr
           ),
         });
@@ -525,7 +606,7 @@
         j,
         el: el(
           'path',
-          { d: '', fill: 'none', stroke: BIN.b5, 'stroke-width': 1.1, opacity: 0.4 },
+          { d: '', fill: 'none', stroke: T.contour, 'stroke-width': 1.1, opacity: 0.4 },
           gTerr
         ),
       });
@@ -537,17 +618,17 @@
         'path',
         {
           d: 'M -7 0 L -7 -9 L 0 -13 L 7 -9 L 7 0 L 0 3.5 Z',
-          fill: '#141a24',
-          stroke: BIN.b6,
+          fill: T.panel,
+          stroke: T.accent,
           'stroke-width': 1,
           'stroke-linejoin': 'round',
         },
         g
       );
-      el('path', { d: 'M -7 -9 L 0 -13 L 7 -9 L 0 -5.5 Z', fill: BIN.b6, opacity: 0.85 }, g);
+      el('path', { d: 'M -7 -9 L 0 -13 L 7 -9 L 0 -5.5 Z', fill: T.accent, opacity: 0.85 }, g);
       const t = el(
         'text',
-        { x: 0, y: -18, 'text-anchor': 'middle', fill: BIN.b6, 'font-size': 6.5, class: 'leap-label' },
+        { x: 0, y: -18, 'text-anchor': 'middle', fill: T.accent, 'font-size': 6.5, class: 'leap-label' },
         g
       );
       t.textContent = n.label;
@@ -575,13 +656,13 @@
       bikeOnly
     );
     const riderOnBike = el('g', {}, bikeLean);
-    el('circle', { cx: 1, cy: -23, r: 3.6, fill: BIN.b6 }, riderOnBike);
+    el('circle', { cx: 1, cy: -23, r: 3.6, fill: T.accent }, riderOnBike);
     el(
       'path',
       {
         d: 'M 1 -19.6 L 1 -12.4 M 1 -18 L 4.4 -14.4 M 1 -12.4 L -1.6 -9',
         fill: 'none',
-        stroke: BIN.b6,
+        stroke: T.accent,
         'stroke-width': 1.4,
         'stroke-linecap': 'round',
       },
@@ -590,10 +671,10 @@
 
     function makeWalker(parent: Element) {
       const g = el('g', { opacity: 0 }, parent);
-      el('circle', { cx: 0, cy: -23, r: 3.6, fill: BIN.b6 }, g);
-      el('path', { d: 'M 0 -19.4 L 0 -9', stroke: BIN.b6, 'stroke-width': 1.5, 'stroke-linecap': 'round' }, g);
+      el('circle', { cx: 0, cy: -23, r: 3.6, fill: T.accent }, g);
+      el('path', { d: 'M 0 -19.4 L 0 -9', stroke: T.accent, 'stroke-width': 1.5, 'stroke-linecap': 'round' }, g);
       const mk = (w: number) =>
-        el('path', { stroke: BIN.b6, 'stroke-width': w, 'stroke-linecap': 'round' }, g);
+        el('path', { stroke: T.accent, 'stroke-width': w, 'stroke-linecap': 'round' }, g);
       return { g, aL: mk(1.3), aR: mk(1.3), lL: mk(1.5), lR: mk(1.5) };
     }
     type Walker = ReturnType<typeof makeWalker>;
@@ -610,35 +691,35 @@
     const shipG = el('g', { opacity: 0 }, gProps);
     const shipShadow = el('ellipse', { cx: 0, cy: 2, rx: 52, ry: 8, fill: '#000', opacity: 0.45 }, shipG);
     const shipBody = el('g', {}, shipG);
-    const wingStyle = { stroke: BIN.b5, 'stroke-width': 1.6, 'stroke-linejoin': 'round' };
-    el('path', { d: 'M 20 -14 L 2 -52 L -26 -52 L -24 -14 Z', fill: BIN.b3, ...wingStyle }, shipBody);
-    el('path', { d: 'M 2 -52 L -6 -66 L -24 -66 L -26 -52 Z', fill: BIN.b4, ...wingStyle }, shipBody);
+    const wingStyle = { stroke: T.wingEdge, 'stroke-width': 1.6, 'stroke-linejoin': 'round' };
+    el('path', { d: 'M 20 -14 L 2 -52 L -26 -52 L -24 -14 Z', fill: T.wing, ...wingStyle }, shipBody);
+    el('path', { d: 'M 2 -52 L -6 -66 L -24 -66 L -26 -52 Z', fill: T.wingLit, ...wingStyle }, shipBody);
     el(
       'path',
       {
         d: 'M 70 -22 L 34 -30 L -34 -34 L -46 -30 L -46 -14 L -34 -10 L 34 -14 Z',
-        fill: INK,
-        stroke: '#a6aebb',
+        fill: T.hullFill,
+        stroke: T.outline,
         'stroke-width': 2,
         'stroke-linejoin': 'round',
       },
       shipBody
     );
-    el('path', { d: 'M 30 -26 L -36 -29', stroke: BIN.b6, 'stroke-width': 2.4, opacity: 0.9 }, shipBody);
+    el('path', { d: 'M 30 -26 L -36 -29', stroke: T.accent, 'stroke-width': 2.4, opacity: 0.9 }, shipBody);
     el(
       'path',
-      { d: 'M 22 -22 L -2 -28 L -12 -22 L -2 -17 Z', fill: BIN.b5, stroke: INK, 'stroke-width': 1.2 },
+      { d: 'M 22 -22 L -2 -28 L -12 -22 L -2 -17 Z', fill: T.canopy, stroke: T.outline, 'stroke-width': 1.2 },
       shipBody
     );
-    el('rect', { x: -52, y: -27, width: 9, height: 7, rx: 2, fill: '#7f93b8' }, shipBody);
-    el('rect', { x: -52, y: -19, width: 9, height: 7, rx: 2, fill: '#7f93b8' }, shipBody);
+    el('rect', { x: -52, y: -27, width: 9, height: 7, rx: 2, fill: T.metal }, shipBody);
+    el('rect', { x: -52, y: -19, width: 9, height: 7, rx: 2, fill: T.metal }, shipBody);
     const hullText = el(
       'text',
       {
         x: -4,
         y: -17.5,
         'text-anchor': 'middle',
-        fill: '#0d0f12',
+        fill: T.monoPlanets ? T.ink : '#0d0f12',
         'font-size': 7.4,
         'letter-spacing': '1.6',
         class: 'leap-label',
@@ -650,7 +731,7 @@
       'path',
       {
         d: 'M -16 -12 L -20 2 M 16 -14 L 20 2 M -28 2 L -12 2 M 12 2 L 28 2',
-        stroke: '#a6aebb',
+        stroke: T.outline,
         'stroke-width': 2.2,
         'stroke-linecap': 'round',
       },
@@ -661,19 +742,19 @@
     const rearG = el('g', {}, gShipR);
     const rf1 = el('ellipse', { cx: -13, cy: 9, rx: 11, ry: 6, fill: 'url(#leapGlow)' }, rearG);
     const rf2 = el('ellipse', { cx: 13, cy: 9, rx: 11, ry: 6, fill: 'url(#leapGlow)' }, rearG);
-    const rw = { stroke: BIN.b5, 'stroke-width': 1.4, 'stroke-linejoin': 'round' };
-    el('path', { d: 'M -46 -2 L -16 -8 L -16 6 L -44 8 Z', fill: BIN.b3, ...rw }, rearG);
-    el('path', { d: 'M  46 -2 L  16 -8 L  16 6 L  44 8 Z', fill: BIN.b3, ...rw }, rearG);
-    el('path', { d: 'M -46 -2 L -50 -14 L -34 -14 L -30 -5 Z', fill: BIN.b4, ...rw }, rearG);
-    el('path', { d: 'M  46 -2 L  50 -14 L  34 -14 L  30 -5 Z', fill: BIN.b4, ...rw }, rearG);
+    const rw = { stroke: T.wingEdge, 'stroke-width': 1.4, 'stroke-linejoin': 'round' };
+    el('path', { d: 'M -46 -2 L -16 -8 L -16 6 L -44 8 Z', fill: T.wing, ...rw }, rearG);
+    el('path', { d: 'M  46 -2 L  16 -8 L  16 6 L  44 8 Z', fill: T.wing, ...rw }, rearG);
+    el('path', { d: 'M -46 -2 L -50 -14 L -34 -14 L -30 -5 Z', fill: T.wingLit, ...rw }, rearG);
+    el('path', { d: 'M  46 -2 L  50 -14 L  34 -14 L  30 -5 Z', fill: T.wingLit, ...rw }, rearG);
     el(
       'path',
-      { d: 'M -18 -10 L 18 -10 L 15 7 L -15 7 Z', fill: INK, stroke: '#a6aebb', 'stroke-width': 1.6, 'stroke-linejoin': 'round' },
+      { d: 'M -18 -10 L 18 -10 L 15 7 L -15 7 Z', fill: T.hullFill, stroke: T.outline, 'stroke-width': 1.6, 'stroke-linejoin': 'round' },
       rearG
     );
-    el('path', { d: 'M -13 -8 L 13 -8', stroke: BIN.b6, 'stroke-width': 2 }, rearG);
-    el('rect', { x: -19, y: 0, width: 9, height: 7, rx: 2, fill: '#7f93b8' }, rearG);
-    el('rect', { x: 10, y: 0, width: 9, height: 7, rx: 2, fill: '#7f93b8' }, rearG);
+    el('path', { d: 'M -13 -8 L 13 -8', stroke: T.accent, 'stroke-width': 2 }, rearG);
+    el('rect', { x: -19, y: 0, width: 9, height: 7, rx: 2, fill: T.metal }, rearG);
+    el('rect', { x: 10, y: 0, width: 9, height: 7, rx: 2, fill: T.metal }, rearG);
     rearG.appendChild(rf1);
     rearG.appendChild(rf2);
 
@@ -681,32 +762,32 @@
       'path',
       {
         d: 'M 0 0 H 1200 V 600 H 0 Z M 150 100 Q 600 26 1050 100 L 1120 396 Q 600 482 80 396 Z',
-        fill: '#0a0f1a',
+        fill: T.cockFill,
         'fill-rule': 'evenodd',
       },
       gCock
     );
     el(
       'path',
-      { d: 'M 150 100 Q 600 26 1050 100 L 1120 396 Q 600 482 80 396 Z', fill: 'none', stroke: '#6f88b4', 'stroke-width': 7 },
+      { d: 'M 150 100 Q 600 26 1050 100 L 1120 396 Q 600 482 80 396 Z', fill: 'none', stroke: T.cockFrame, 'stroke-width': 7 },
       gCock
     );
-    el('path', { d: 'M 600 38 L 600 474', stroke: '#6f88b4', 'stroke-width': 6, opacity: 0.85 }, gCock);
-    el('path', { d: 'M 150 100 L 80 396 M 1050 100 L 1120 396', stroke: '#6f88b4', 'stroke-width': 5, opacity: 0.7 }, gCock);
-    el('rect', { x: 0, y: 396, width: 1200, height: 204, fill: '#0a0f1a' }, gCock);
-    el('rect', { x: 330, y: 420, width: 540, height: 104, rx: 2, fill: '#14171c', stroke: '#2a313b', 'stroke-width': 2 }, gCock);
+    el('path', { d: 'M 600 38 L 600 474', stroke: T.cockFrame, 'stroke-width': 6, opacity: 0.85 }, gCock);
+    el('path', { d: 'M 150 100 L 80 396 M 1050 100 L 1120 396', stroke: T.cockFrame, 'stroke-width': 5, opacity: 0.7 }, gCock);
+    el('rect', { x: 0, y: 396, width: 1200, height: 204, fill: T.cockFill }, gCock);
+    el('rect', { x: 330, y: 420, width: 540, height: 104, rx: 2, fill: T.hudFill, stroke: T.hudStroke, 'stroke-width': 2 }, gCock);
     const hudLabel = el(
       'text',
-      { x: 600, y: 448, 'text-anchor': 'middle', fill: BIN.b3, 'font-size': 17, 'letter-spacing': '2', class: 'leap-mono' },
+      { x: 600, y: 448, 'text-anchor': 'middle', fill: T.stars ? BIN.b3 : T.ink, 'font-size': 17, 'letter-spacing': '2', class: 'leap-mono' },
       gCock
     );
     hudLabel.textContent = 'APPROACH — AZURE';
-    el('rect', { x: 370, y: 464, width: 460, height: 12, rx: 2, fill: '#1b2740' }, gCock);
-    const fuelBar = el('rect', { x: 370, y: 464, width: 460, height: 12, rx: 2, fill: BIN.b6 }, gCock);
+    el('rect', { x: 370, y: 464, width: 460, height: 12, rx: 2, fill: T.gaugeTrack }, gCock);
+    const fuelBar = el('rect', { x: 370, y: 464, width: 460, height: 12, rx: 2, fill: T.accent }, gCock);
     const fuelTxt = el('text', { x: 370, y: 502, fill: DIM, 'font-size': 13, class: 'leap-mono' }, gCock);
     fuelTxt.textContent = 'FUEL';
     const altTxt = el('text', { x: 830, y: 502, 'text-anchor': 'end', fill: DIM, 'font-size': 13, class: 'leap-mono' }, gCock);
-    const flash = el('rect', { x: 0, y: 0, width: 1200, height: 600, fill: '#dff1ff', opacity: 0 }, gFlash);
+    const flash = el('rect', { x: 0, y: 0, width: 1200, height: 600, fill: T.flash, opacity: 0 }, gFlash);
 
     const CAMKEYS = [
       { t: 0, pos: [-34, 30, -46] as Vec, tgt: [-6, 6, 74] as Vec },
@@ -865,7 +946,7 @@
           }
           const sh = clamp((hs / 4 + 4) / 24, 0, 1);
           q.el.setAttribute('d', d + 'Z');
-          q.el.setAttribute('fill', mix('#0f1720', onAzure ? BIN.b2 : BIN.b4, sh * 0.8));
+          q.el.setAttribute('fill', mix(T.terrLow, onAzure ? BIN.b2 : T.terrHigh, sh * 0.8));
         }
         for (const c2 of CONTOURS) {
           let d = '',
@@ -1046,7 +1127,7 @@
         altTxt.textContent = 'ALT ' + Math.round(alt).toString().padStart(4, '0');
         const fuel = 1 - flightFrac(t) * 0.82;
         fuelBar.setAttribute('width', (460 * fuel).toFixed(0));
-        fuelBar.setAttribute('fill', fuel < 0.3 ? '#ff8a6b' : BIN.b6);
+        fuelBar.setAttribute('fill', fuel < 0.3 ? '#a8391c' : T.accent);
       }
       flash.setAttribute(
         'opacity',
