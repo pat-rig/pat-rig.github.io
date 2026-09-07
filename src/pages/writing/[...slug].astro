@@ -48,6 +48,15 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
 ---
 
 <BaseLayout title={post.data.title} description={post.data.summary}>
+  {/*
+    Outside `.layout`, not inside the article. The figure runs the full width of
+    the viewport, and the only element in the chain that is actually centred on
+    the viewport is the shell — the article column is left-aligned within it, so
+    breaking out from in there lands the band off-centre. As a direct child of
+    the shell it can escape symmetrically, and it can never become a stray grid
+    item when the contents rail is present.
+  */}
+  {post.data.viz === 'agent-leap' && <AgentLeap />}
   <div class:list={['layout', showToc && 'layout--toc']}>
     <article class="post">
       <header class="post__head">
@@ -78,8 +87,6 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
           )
         }
       </header>
-
-      {post.data.viz === 'agent-leap' && <AgentLeap />}
 
       <div class="post__body">
         <Content />

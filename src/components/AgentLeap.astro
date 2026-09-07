@@ -10,8 +10,10 @@
  *   visualisation ground ("not a page surface"). No border and no radius: a
  *   bordered rounded plate is the anti-pattern the design doc names, and the
  *   figure rule says a box "would read as a widget pasted into the article".
- * - It breaks out to `--width-wide` so it is plainly a band the article passes
- *   through rather than an embed sitting inside the text column.
+ * - It runs edge to edge, so it is plainly a band the page passes through
+ *   rather than an embed sitting inside the text column. The frame is a
+ *   cinematic 2:1: at 5:3 a full-width band is taller than the viewport and the
+ *   reader never sees the whole composition at once.
  * - Readouts are `--font-mono`, the site's data face.
  * - Colour comes from the heatmap bins. That is a compromise worth knowing
  *   about: viridis is a *sequential* scale and these five planets are
@@ -28,7 +30,7 @@
   <div class="leap__plate">
     <svg
       class="leap__svg"
-      viewBox="0 0 1200 720"
+      viewBox="0 0 1200 600"
       role="img"
       aria-label="An animation: a cyclist crossing a small range of hills, then boarding a
       starfighter marked AI AGENT and flying past planets labelled CI/CD, Databases, Web apps
@@ -48,23 +50,22 @@
 
 <style>
   /*
-   * Breaks out of the article column to the site's wide measure, anchored to
-   * the column's left edge so it lines up with the masthead rule above it.
+   * Edge to edge. `.shell` is `max-width: --width-wide` with `margin-inline:
+   * auto`, so it is genuinely centred on the viewport and a child of it can
+   * escape symmetrically: the negative margins widen the box by exactly the
+   * shell's own margins plus its gutter, which comes out at the full viewport.
    *
-   * Not centred on the column and not `100vw`: the article is left-aligned
-   * inside a wider shell, so any column-relative centring drifts left of the
-   * page and hangs off the viewport. Left-anchoring is the only version that
-   * reads as composed rather than as an overflow.
+   * `width` is left to fall out of the margins rather than being set to
+   * `100vw`, because `100vw` counts a classic scrollbar and would push a
+   * horizontal one into existence on platforms that have them.
    *
-   * This is a deliberate exception to the template's "nothing breaks out of
-   * the column" rule — a figure this size at 42rem would be a postage stamp —
-   * and it only works because the post carries no contents rail to collide
-   * with. A post using this component should stay under three headings.
+   * A deliberate exception to the template's "nothing breaks out of the
+   * column": this is not a diagram beside an argument, it *is* the argument,
+   * and at 42rem it would be a postage stamp.
    */
   .leap {
-    width: var(--width-wide);
-    max-width: calc(100vw - 2 * var(--gutter));
-    margin: var(--space-7) 0;
+    margin-inline: calc(50% - 50vw);
+    margin-block: var(--space-7);
   }
 
   .leap__plate {
@@ -78,6 +79,13 @@
     display: block;
     width: 100%;
     height: auto;
+    /*
+     * Keep the whole composition, and the readouts sitting on it, inside one
+     * screenful. When this binds the scene letterboxes horizontally — and the
+     * bars are the plate's own `--board`, so the seam is invisible and the band
+     * still runs edge to edge.
+     */
+    max-height: 78vh;
   }
 
   .leap__hud {
@@ -87,7 +95,11 @@
     align-items: flex-end;
     justify-content: space-between;
     gap: var(--space-6);
-    padding: var(--space-4) var(--space-5);
+    /*
+     * Indent to the shell's own edge, so the readouts line up with the masthead
+     * and the article rather than floating against the raw screen edge.
+     */
+    padding: var(--space-4) max(var(--gutter), calc((100vw - var(--width-wide)) / 2 + var(--gutter)));
     pointer-events: none;
   }
 
@@ -225,7 +237,7 @@
   const DIM = '#8c95a3';
 
   const CX = 600,
-    CY = 360,
+    CY = 300,
     F = 880;
   /*
    * proj() returns F/z — pixels per world unit at that depth. Sprite art is
@@ -668,7 +680,7 @@
     el(
       'path',
       {
-        d: 'M 0 0 H 1200 V 720 H 0 Z M 150 120 Q 600 40 1050 120 L 1120 470 Q 600 560 80 470 Z',
+        d: 'M 0 0 H 1200 V 600 H 0 Z M 150 100 Q 600 26 1050 100 L 1120 396 Q 600 482 80 396 Z',
         fill: '#0a0f1a',
         'fill-rule': 'evenodd',
       },
@@ -676,25 +688,25 @@
     );
     el(
       'path',
-      { d: 'M 150 120 Q 600 40 1050 120 L 1120 470 Q 600 560 80 470 Z', fill: 'none', stroke: '#6f88b4', 'stroke-width': 7 },
+      { d: 'M 150 100 Q 600 26 1050 100 L 1120 396 Q 600 482 80 396 Z', fill: 'none', stroke: '#6f88b4', 'stroke-width': 7 },
       gCock
     );
-    el('path', { d: 'M 600 52 L 600 552', stroke: '#6f88b4', 'stroke-width': 6, opacity: 0.85 }, gCock);
-    el('path', { d: 'M 150 120 L 80 470 M 1050 120 L 1120 470', stroke: '#6f88b4', 'stroke-width': 5, opacity: 0.7 }, gCock);
-    el('rect', { x: 0, y: 470, width: 1200, height: 250, fill: '#0a0f1a' }, gCock);
-    el('rect', { x: 330, y: 500, width: 540, height: 120, rx: 2, fill: '#14171c', stroke: '#2a313b', 'stroke-width': 2 }, gCock);
+    el('path', { d: 'M 600 38 L 600 474', stroke: '#6f88b4', 'stroke-width': 6, opacity: 0.85 }, gCock);
+    el('path', { d: 'M 150 100 L 80 396 M 1050 100 L 1120 396', stroke: '#6f88b4', 'stroke-width': 5, opacity: 0.7 }, gCock);
+    el('rect', { x: 0, y: 396, width: 1200, height: 204, fill: '#0a0f1a' }, gCock);
+    el('rect', { x: 330, y: 420, width: 540, height: 104, rx: 2, fill: '#14171c', stroke: '#2a313b', 'stroke-width': 2 }, gCock);
     const hudLabel = el(
       'text',
-      { x: 600, y: 530, 'text-anchor': 'middle', fill: BIN.b3, 'font-size': 17, 'letter-spacing': '2', class: 'leap-mono' },
+      { x: 600, y: 448, 'text-anchor': 'middle', fill: BIN.b3, 'font-size': 17, 'letter-spacing': '2', class: 'leap-mono' },
       gCock
     );
     hudLabel.textContent = 'APPROACH — AZURE';
-    el('rect', { x: 370, y: 548, width: 460, height: 12, rx: 2, fill: '#1b2740' }, gCock);
-    const fuelBar = el('rect', { x: 370, y: 548, width: 460, height: 12, rx: 2, fill: BIN.b6 }, gCock);
-    const fuelTxt = el('text', { x: 370, y: 588, fill: DIM, 'font-size': 13, class: 'leap-mono' }, gCock);
+    el('rect', { x: 370, y: 464, width: 460, height: 12, rx: 2, fill: '#1b2740' }, gCock);
+    const fuelBar = el('rect', { x: 370, y: 464, width: 460, height: 12, rx: 2, fill: BIN.b6 }, gCock);
+    const fuelTxt = el('text', { x: 370, y: 502, fill: DIM, 'font-size': 13, class: 'leap-mono' }, gCock);
     fuelTxt.textContent = 'FUEL';
-    const altTxt = el('text', { x: 830, y: 588, 'text-anchor': 'end', fill: DIM, 'font-size': 13, class: 'leap-mono' }, gCock);
-    const flash = el('rect', { x: 0, y: 0, width: 1200, height: 720, fill: '#dff1ff', opacity: 0 }, gFlash);
+    const altTxt = el('text', { x: 830, y: 502, 'text-anchor': 'end', fill: DIM, 'font-size': 13, class: 'leap-mono' }, gCock);
+    const flash = el('rect', { x: 0, y: 0, width: 1200, height: 600, fill: '#dff1ff', opacity: 0 }, gFlash);
 
     const CAMKEYS = [
       { t: 0, pos: [-34, 30, -46] as Vec, tgt: [-6, 6, 74] as Vec },
@@ -765,7 +777,7 @@
       if (t > T_LAUNCH - 0.4) {
         for (const s of STARS) {
           const q = proj(Vw, s.p);
-          if (!q || q[0] < -60 || q[0] > 1260 || q[1] < -60 || q[1] > 780) {
+          if (!q || q[0] < -60 || q[0] > 1260 || q[1] < -60 || q[1] > 660) {
             s.el.setAttribute('r', '0');
             continue;
           }
@@ -813,7 +825,7 @@
         const fs = clamp(v.R * 0.26, 9, 46);
         /* A planet big enough to fill the frame would push its own name off
            screen — keep the label inside the picture. */
-        const ly = Math.min(v.R + fs * 1.5, Math.max(300 - v.q[1], -v.q[1] + 300));
+        const ly = Math.min(v.R + fs * 1.5, Math.max(250 - v.q[1], -v.q[1] + 250));
         v.p.label!.setAttribute('y', ly.toFixed(1));
         v.p.label!.setAttribute('font-size', fs.toFixed(1));
         v.p.label!.setAttribute('opacity', clamp((v.R - 14) / 60, 0, 1).toFixed(2));

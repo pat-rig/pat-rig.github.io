@@ -16,7 +16,8 @@ I have never found a good way to say how large a change coding agents were.
 "More productive" is true and says nothing. Percentages invite an argument about
 the percentage. So this is an attempt to show it instead.
 
-The animation above is the whole argument. Watch it once before reading on.
+The animation at the top of this page is the whole argument. Watch it once
+before reading on.
 
 Before agents, everything I could reach on a computer sat inside one small patch
 of ground. A notebook here, a script there, a machine with a GPU in it. I could
