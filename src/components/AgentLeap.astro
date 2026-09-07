@@ -325,7 +325,9 @@ const { theme = 'paper' } = Astro.props;
     T_TEAM = 49.1,
     T_FENCE = 49.5,
     T_RISE = 50.5,
-    DUR = 57.2;
+    /* the camera stops here; everything after is the film holding its last frame */
+    T_SETTLE = 55.5,
+    DUR = 60.2;
   /* The frame drawn when motion is reduced: the ship abeam of a planet. */
   const STILL_T = 22.6;
 
@@ -1016,7 +1018,12 @@ const { theme = 'paper' } = Astro.props;
         return { pos: lerp3(a.pos, b.pos, s), tgt: lerp3(a.tgt, b.tgt, s) };
       }
       if (t >= T_TOUCH) {
-        const k = ease(clamp((t - T_TOUCH) / (DUR - T_TOUCH), 0, 1));
+        /*
+         * Settles before the end rather than drifting until the loop restarts,
+         * so the last few seconds are a still frame you can actually look at.
+         * The hoist is the only thing left moving, which is the point of it.
+         */
+        const k = ease(clamp((t - T_TOUCH) / (T_SETTLE - T_TOUCH), 0, 1));
         return {
           pos: lerp3([-10, 26, 4], [16, 22, 18], k),
           tgt: lerp3([18, 6, 92], [38, 6, 104], k),
