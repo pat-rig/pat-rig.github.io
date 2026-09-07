@@ -130,10 +130,16 @@ const { theme = 'paper' } = Astro.props;
   }
 
   /*
-   * With motion reduced the control is the only way in, and on a touch screen
-   * there is no hover to reveal it — so in both cases it simply stays visible.
+   * Only when motion is reduced, where nothing plays on its own and this is the
+   * one way to start it.
+   *
+   * Not on touch. `(hover: none)` was here so the control would be reachable on
+   * a phone, but it put a permanent button over the artwork for every mobile
+   * visitor — and it never showed up in testing, because resizing a desktop
+   * window changes the viewport without changing the pointer, so desktop still
+   * reports `hover: hover`. On touch the plate itself is the control instead.
    */
-  @media (prefers-reduced-motion: reduce), (hover: none) {
+  @media (prefers-reduced-motion: reduce) {
     .leap__toggle {
       opacity: 1;
     }
@@ -1493,12 +1499,25 @@ const { theme = 'paper' } = Astro.props;
       }
       raf = requestAnimationFrame(tick);
     }
-    toggle.addEventListener('click', () => {
+    const flip = () => {
       playing = !playing;
       last = performance.now();
       setLabel();
       if (playing && !raf) tick();
-    });
+    };
+    toggle.addEventListener('click', flip);
+    /*
+     * On a touch screen the button is hidden, so tapping the artwork pauses it.
+     * WCAG 2.2.2 wants a way to stop motion that runs longer than five seconds,
+     * and this keeps one without parking a button on top of the picture.
+     */
+    if (matchMedia('(hover: none)').matches) {
+      const plate = root.querySelector('.leap__plate') as HTMLElement;
+      plate.style.cursor = 'pointer';
+      plate.addEventListener('click', (e) => {
+        if (e.target !== toggle) flip();
+      });
+    }
 
     /* Pause when off screen: no point animating what nobody is looking at. */
     let onScreen = true;
