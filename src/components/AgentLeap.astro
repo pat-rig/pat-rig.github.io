@@ -303,21 +303,24 @@ const { theme = 'paper' } = Astro.props;
    * and 5.4s of landing.
    */
   const T_RIDE = 4.5,
-    T_FELL = 5.6,
-    T_LOADED = 7.2,
-    T_ATMILL = 9.6,
-    T_MILLED = 11.2,
-    T_ATSITE = 13.4,
-    T_BUILT = 16,
-    T_OFF = 16.2,
-    T_BOARD = 18.4,
-    T_LAUNCH = 19.5,
-    T_COCK = 37.5,
-    T_TOUCH = 42.1,
-    T_TEAM = 43,
-    T_FENCE = 43.4,
-    T_RISE = 44.4,
-    DUR = 51;
+    T_FELL = 5.8,
+    /* the barrow is fetched after the tree is down, not while it is falling */
+    T_BARROW = 7.8,
+    T_LOADED = 8.6,
+    T_ATMILL = 11,
+    T_MILLED = 12.6,
+    T_ATSITE = 14.8,
+    T_BUILT = 17,
+    /* then the finished hut simply sits there, long enough to register */
+    T_OFF = 19.6,
+    T_BOARD = 21.8,
+    T_LAUNCH = 22.9,
+    T_COCK = 40.9,
+    T_TOUCH = 45.5,
+    T_TEAM = 46.4,
+    T_FENCE = 46.8,
+    T_RISE = 47.8,
+    DUR = 54.5;
   /* The frame drawn when motion is reduced: the ship abeam of a planet. */
   const STILL_T = 22.6;
 
@@ -409,22 +412,23 @@ const { theme = 'paper' } = Astro.props;
     { x: 24, z: 142, world: 'azure', kind: 'tower', th: 104, rows: 7, h: 104, label: 'model' },
     { x: 46, z: 126, world: 'azure', kind: 'tower', th: 68, rows: 5, h: 68, label: 'API' },
     { x: 68, z: 110, world: 'azure', kind: 'tower', th: 56, rows: 4, h: 56, label: 'web app' },
-    { x: 34, z: 120, world: 'azure', kind: 'site', h: 0, label: '' },
+    { x: 34, z: 120, world: 'azure', kind: 'site', h: 92, label: 'what I can build with agents' },
   ];
   const CHAPTERS = [
     { t: 0, title: 'Before agents', text: 'A few hills, reachable at pedalling speed.' },
-    { t: 5.6, title: 'Raw material', text: 'Everything starts as something you have to go and fell.' },
-    { t: 9.6, title: 'Through the mill', text: 'The same cut, applied to everything you feed it.' },
-    { t: 13.4, title: 'Building', text: 'Then you put it up yourself, one piece at a time.' },
-    { t: 16.2, title: 'AI AGENT', text: 'It was parked there the whole time.' },
-    { t: 19.7, title: 'With agents', text: 'Same human. The range is what changed.' },
-    { t: 23, title: 'Passing through', text: 'Each of these was out of reach on a bicycle.' },
-    { t: 37.7, title: 'Approach', text: 'Fuel costs money. You pick the trips worth taking.' },
-    { t: 42.7, title: 'You are not the one building', text: 'They fan out. He stands still.' },
+    { t: 5.8, title: 'Raw material', text: 'Everything starts as something you have to go and fell.' },
+    { t: 11, title: 'Through the mill', text: 'The same cut, applied to everything you feed it.' },
+    { t: 14.8, title: 'Building', text: 'Then you put it up yourself, one piece at a time.' },
+    { t: 17.2, title: 'A day’s work', text: 'One person, one thing at a time, and this is where it ends.' },
+    { t: 19.8, title: 'AI AGENT', text: 'It was parked there the whole time.' },
+    { t: 23.1, title: 'With agents', text: 'Same human. The range is what changed.' },
+    { t: 26.4, title: 'Passing through', text: 'Each of these was out of reach on a bicycle.' },
+    { t: 41.1, title: 'Approach', text: 'Fuel costs money. You pick the trips worth taking.' },
+    { t: 46.1, title: 'You are not the one building', text: 'They fan out. He stands still.' },
     {
-      t: 47.5,
-      title: 'What gets built here',
-      text: 'Same craft, same timber — running in parallel, behind a fence, on a hoist that never stops.',
+      t: 51.9,
+      title: 'The same craft',
+      text: 'In parallel, behind a fence, on a hoist that never stops.',
     },
   ];
 
@@ -621,6 +625,10 @@ const { theme = 'paper' } = Astro.props;
     }
 
     const hz = el('ellipse', { cx: CX, cy: 0, rx: 1, ry: 1, fill: 'url(#leapHaze)' }, gHaze);
+    /* Far enough away that it barely parallaxes, which is what a sun does. It
+       lives behind the terrain, so the hills cut across it. */
+    const SUN_AT: Vec = [-300, 30, 560];
+    const sun = el('circle', { cx: -99, cy: -99, r: 1, fill: 'none', stroke: T.ink, 'stroke-width': 1.2, opacity: 0 }, gHaze);
     const QUADS: { i: number; j: number; el: Element }[] = [];
     for (let j = ROWS - 1; j >= 0; j--)
       for (let i = 0; i < COLS; i++)
@@ -694,14 +702,20 @@ const { theme = 'paper' } = Astro.props;
         el('path', { d: 'M -14 0 L -14 -17 L 14 -17 L 14 0 Z', ...solid }, g);
         el('path', { d: 'M -17 -17 L 0 -27 L 17 -17 Z', ...solid }, g);
         el('path', { d: 'M -4 0 L -4 -9 L 4 -9 L 4 0', ...line }, g);
-        /* a blade, because a mill cuts everything to the same size */
-        el('circle', { cx: -20, cy: -9, r: 6, ...solid }, g);
+        /*
+         * The blade. It used to sit clear of the building at ground level, where
+         * it read as a rising sun rather than as a saw — so it is now smaller,
+         * lifted to axle height, and overlaps the wall it is mounted on.
+         */
+        el('path', { d: 'M -14 -11 L -17 -11', ...line }, g);
+        el('circle', { cx: -18, cy: -11, r: 4, ...solid }, g);
         for (let k = 0; k < 8; k++) {
           const a = (k * Math.PI) / 4;
-          const c = Math.cos(a) * 6,
-            sn = Math.sin(a) * 6;
-          el('path', { d: `M ${-20 + c} ${-9 + sn} L ${-20 + c * 1.34} ${-9 + sn * 1.34}`, ...line }, g);
+          const c = Math.cos(a) * 4,
+            sn = Math.sin(a) * 4;
+          el('path', { d: `M ${-18 + c} ${-11 + sn} L ${-18 + c * 1.4} ${-11 + sn * 1.4}`, ...line }, g);
         }
+        el('circle', { cx: -18, cy: -11, r: 0.9, fill: T.ink }, g);
         h.planks = plankPile(g, 22);
       } else if (kind === 'bench') {
         el('path', { d: 'M -12 0 L -12 -9 M 12 0 L 12 -9', ...line }, g);
@@ -944,10 +958,12 @@ const { theme = 'paper' } = Astro.props;
 
     const CAMKEYS = [
       { t: 0, pos: [-34, 30, -46] as Vec, tgt: [-6, 6, 74] as Vec },
-      { t: 9.6, pos: [4, 28, -40] as Vec, tgt: [-8, 6, 86] as Vec },
-      { t: 16, pos: [34, 22, -8] as Vec, tgt: [10, 6, 88] as Vec },
-      { t: 18.4, pos: [52, 17, 22] as Vec, tgt: [22, 7, 96] as Vec },
-      { t: 19.5, pos: [60, 22, 14] as Vec, tgt: [20, 12, 92] as Vec },
+      { t: 11, pos: [4, 28, -40] as Vec, tgt: [-8, 6, 86] as Vec },
+      /* settles on the finished hut and holds there */
+      { t: 17, pos: [26, 21, -12] as Vec, tgt: [6, 6, 74] as Vec },
+      { t: 19.6, pos: [30, 20, -6] as Vec, tgt: [8, 6, 76] as Vec },
+      { t: 21.8, pos: [52, 17, 22] as Vec, tgt: [22, 7, 96] as Vec },
+      { t: 22.9, pos: [60, 22, 14] as Vec, tgt: [20, 12, 92] as Vec },
     ];
     const flightFrac = (t: number) => clamp((t - T_LAUNCH) / (T_TOUCH - T_LAUNCH), 0, 1);
 
@@ -1138,6 +1154,13 @@ const { theme = 'paper' } = Astro.props;
           }
           c2.el.setAttribute('d', ok ? d : '');
         }
+        const sp = proj(Vw, SUN_AT);
+        if (sp && !onAzure) {
+          sun.setAttribute('cx', sp[0].toFixed(1));
+          sun.setAttribute('cy', sp[1].toFixed(1));
+          sun.setAttribute('r', (26 * sp[3]).toFixed(1));
+          sun.setAttribute('opacity', '0.35');
+        } else sun.setAttribute('opacity', '0');
         const far = proj(Vw, [0, hf(0, TZ1), TZ1]);
         if (far) {
           hz.setAttribute('cx', far[0].toFixed(1));
@@ -1252,6 +1275,7 @@ const { theme = 'paper' } = Astro.props;
         /* where the worker is, minute by minute */
         const LEGS = [
           { t: T_RIDE, x: -50, z: 100 },
+          { t: T_BARROW, x: -56, z: 96 },
           { t: T_LOADED, x: -56, z: 96 },
           { t: T_ATMILL, x: 4, z: 128 },
           { t: T_MILLED, x: 4, z: 128 },
@@ -1289,7 +1313,7 @@ const { theme = 'paper' } = Astro.props;
             poseWalker(walkerHome, t * 9, moving);
             /* the barrow rides just ahead of him, and only while there is a load
                to move — he walks to the ship empty-handed */
-            const hauling = working && t > T_LOADED - 0.6 && t < T_ATSITE + 0.4;
+            const hauling = working && t > T_BARROW && t < T_ATSITE + 0.4;
             barrowG.setAttribute('opacity', hauling ? '1' : '0');
             if (hauling) {
               barrowG.setAttribute(
@@ -1374,6 +1398,8 @@ const { theme = 'paper' } = Astro.props;
             tw.node.shadow.setAttribute('opacity', (tw.node.shadowOp * rise).toFixed(3));
           });
 
+          /* the answer to the hut's label, once there is something to answer with */
+          NODEG[8].label.setAttribute('opacity', smooth(T_RISE + 4, T_RISE + 4.9, t).toFixed(2));
           /* the perimeter is drawn before anything goes up inside it */
           SITE.fence!.setAttribute('opacity', (smooth(T_FENCE, T_FENCE + 1.2, t) * 0.75).toFixed(2));
           /* and the hoist just keeps going */
