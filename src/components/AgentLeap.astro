@@ -312,7 +312,7 @@ const { theme = 'paper' } = Astro.props;
    * drawn in its own local units, so each needs its own art-units-per-world-unit
    * factor on top of that.
    */
-  const S_NODE = 0.22,
+  const S_NODE = 0.34,
     S_BIKE = 0.18,
     S_WALK = 0.22,
     S_SHIP = 0.13;
@@ -366,12 +366,14 @@ const { theme = 'paper' } = Astro.props;
   /* `c` is filled in per treatment in build() — the home world is drawn in the
      scene's own neutral rather than one of the accent bins. */
   const HOMEP = { pos: [0, -330, 80] as Vec, r: 300, c: '#8c95a3', name: 'my laptop' };
+  /* The sub-label names something real, so each world is a place a reader has
+     actually been rather than an abstraction. Azure's says what it costs. */
   const PLANETS = [
-    { name: 'CI / CD', pos: [-400, 60, 980] as Vec, r: 120, c: BIN.b6, motif: 'arcs' },
-    { name: 'Databases', pos: [480, -80, 1760] as Vec, r: 145, c: BIN.b4, motif: 'discs' },
-    { name: 'Web apps', pos: [-450, 120, 2540] as Vec, r: 130, c: BIN.b1, motif: 'panes' },
-    { name: 'APIs & infra', pos: [430, 190, 3320] as Vec, r: 110, c: BIN.b5, motif: 'hex' },
-    { name: 'Azure', pos: [0, -30, 4520] as Vec, r: 300, c: BIN.b2, motif: 'grid' },
+    { name: 'CI / CD', sub: 'GitHub Actions', pos: [-400, 60, 980] as Vec, r: 120, c: BIN.b6, motif: 'arcs' },
+    { name: 'Databases', sub: 'Postgres', pos: [480, -80, 1760] as Vec, r: 145, c: BIN.b4, motif: 'discs' },
+    { name: 'Web apps', sub: 'React', pos: [-450, 120, 2540] as Vec, r: 130, c: BIN.b1, motif: 'panes' },
+    { name: 'APIs & infra', sub: 'Kubernetes', pos: [430, 190, 3320] as Vec, r: 110, c: BIN.b5, motif: 'hex' },
+    { name: 'Azure', sub: 'rented by the hour', pos: [0, -30, 4520] as Vec, r: 300, c: BIN.b2, motif: 'grid' },
   ];
   /*
    * The planets flank the corridor and the ship threads between them, coming no
@@ -398,10 +400,22 @@ const { theme = 'paper' } = Astro.props;
     [0, 0, 4180],
     [0, -15, 4230],
   ];
-  const NODES = [
-    { x: -40, z: 60, label: 'Jupyter notebook' },
-    { x: 16, z: 130, label: 'Python script' },
-    { x: 56, z: 52, label: 'GPU box' },
+  /*
+   * The hills are one small data project told as a timber chain, and the bicycle
+   * rides past it in order: trees are the raw material, the mill performs the
+   * same transform on everything fed into it, the bench is where things get
+   * tried and thrown away. What comes out is a hut — the biggest thing one
+   * person builds from what is within a day's ride.
+   *
+   * The payoff is on Azure, where the same craft is putting up a city.
+   * Deliberately the same timber language, at a size the hills cannot reach.
+   */
+  const PROPS = [
+    { x: -60, z: 96, world: 'home', kind: 'forest', h: 34, label: 'raw data', sub: 'some of it labelled' },
+    { x: 6, z: 132, world: 'home', kind: 'mill', h: 27, label: 'preprocessing', sub: 'pandas' },
+    { x: 64, z: 92, world: 'home', kind: 'bench', h: 27, label: 'experiments', sub: 'Jupyter' },
+    { x: 6, z: 60, world: 'home', kind: 'hut', h: 27, label: 'what I could build', sub: 'model.pkl' },
+    { x: 20, z: 128, world: 'azure', kind: 'city', h: 98, label: 'what gets built here', sub: '' },
   ];
   const CHAPTERS = [
     { t: 0, title: 'Before agents', text: 'A few hills, reachable at pedalling speed.' },
@@ -413,7 +427,7 @@ const { theme = 'paper' } = Astro.props;
     {
       t: 37.2,
       title: 'And then you explore',
-      text: 'The same grid as the old hills — this world just has far more of it.',
+      text: 'Same craft, same timber. You just get to build at another size.',
     },
   ];
   const BIKE_RANGE = 150;
@@ -549,6 +563,7 @@ const { theme = 'paper' } = Astro.props;
       rim?: Element;
       motifG?: Element;
       label?: Element;
+      sublabel?: Element;
       grad?: string;
     };
     const ALL = [...PLANETS, HOMEP] as P[];
@@ -566,6 +581,8 @@ const { theme = 'paper' } = Astro.props;
       p.motifG = el('g', {}, p.g);
       p.label = el('text', { 'text-anchor': 'middle', fill: p.c, class: 'leap-label' }, p.g);
       p.label.textContent = p.name;
+      p.sublabel = el('text', { 'text-anchor': 'middle', fill: T.dim, class: 'leap-mono' }, p.g);
+      p.sublabel.textContent = (p as { sub?: string }).sub ?? '';
     }
     function drawMotif(p: P, R: number) {
       const m = p.motifG!;
@@ -636,27 +653,98 @@ const { theme = 'paper' } = Astro.props;
         ),
       });
 
-    const NODEG = NODES.map((n) => {
+    /* Silhouettes in local units, origin at ground contact, a standing human
+       about 23 units tall for scale. */
+    const line = { fill: 'none', stroke: T.ink, 'stroke-width': 1.1, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' };
+    const solid = { fill: T.panel, stroke: T.ink, 'stroke-width': 1.1, 'stroke-linejoin': 'round' };
+
+    function drawProp(g: Element, kind: string) {
+      if (kind === 'forest') {
+        const trees: [number, number, number][] = [
+          [-15, 25, 0],
+          [-5, 34, 1],
+          [5, 22, 0],
+          [15, 30, 1],
+        ];
+        for (const [x, h, tag] of trees) {
+          const w = h * 0.26;
+          el('path', { d: `M ${x} 0 L ${x} ${-h * 0.24}`, ...line }, g);
+          el('path', { d: `M ${x} ${-h * 0.6} L ${x + w * 1.35} 0 L ${x - w * 1.35} 0 Z`, ...solid }, g);
+          el('path', { d: `M ${x} ${-h} L ${x + w} ${-h * 0.44} L ${x - w} ${-h * 0.44} Z`, ...solid }, g);
+          /* a ribbon on a tree is a labelled example */
+          if (tag) el('rect', { x: x + w * 0.5, y: -h * 0.72, width: 3.2, height: 2.1, fill: T.accent }, g);
+        }
+      } else if (kind === 'mill') {
+        el('path', { d: 'M -14 0 L -14 -17 L 14 -17 L 14 0 Z', ...solid }, g);
+        el('path', { d: 'M -17 -17 L 0 -27 L 17 -17 Z', ...solid }, g);
+        el('path', { d: 'M -4 0 L -4 -9 L 4 -9 L 4 0', ...line }, g);
+        /* a blade, because a mill cuts everything to the same size */
+        el('circle', { cx: -20, cy: -9, r: 6, ...solid }, g);
+        for (let k = 0; k < 8; k++) {
+          const a = (k * Math.PI) / 4;
+          const c = Math.cos(a) * 6,
+            sn = Math.sin(a) * 6;
+          el('path', { d: `M ${-20 + c} ${-9 + sn} L ${-20 + c * 1.34} ${-9 + sn * 1.34}`, ...line }, g);
+        }
+      } else if (kind === 'bench') {
+        el('path', { d: 'M -12 0 L -12 -9 M 12 0 L 12 -9', ...line }, g);
+        el('rect', { x: -15, y: -12, width: 30, height: 3, ...solid }, g);
+        /* offcuts: the things that did not work */
+        el('rect', { x: -9, y: -16, width: 7, height: 4, ...solid }, g);
+        el('rect', { x: 2, y: -15, width: 5, height: 3, ...solid }, g);
+        el('path', { d: 'M -17 -20 L 0 -27 L 17 -20', ...line }, g);
+      } else if (kind === 'hut') {
+        el('path', { d: 'M -12 0 L -12 -13 L 12 -13 L 12 0 Z', ...solid }, g);
+        el('path', { d: 'M -15 -13 L 0 -23 L 15 -13 Z', ...solid }, g);
+        el('path', { d: 'M -4 0 L -4 -8 L 4 -8 L 4 0', ...line }, g);
+        el('rect', { x: 6, y: -27, width: 4, height: 7, ...solid }, g);
+      } else {
+        const towers: [number, number, number][] = [
+          [-70, 34, 3],
+          [-46, 58, 5],
+          [-20, 44, 4],
+          [6, 84, 7],
+          [34, 52, 4],
+          [62, 38, 3],
+        ];
+        for (const [x, h, rows] of towers) {
+          el('rect', { x: x - 8, y: -h, width: 16, height: h, ...solid }, g);
+          for (let r = 1; r <= rows; r++) {
+            const y = -h + (h / (rows + 1)) * r;
+            el('path', { d: `M ${x - 5} ${y} L ${x + 5} ${y}`, ...line, opacity: 0.5 }, g);
+          }
+        }
+        /* cranes: the city is still going up, which is the point */
+        for (const [x, h] of [
+          [-32, 80],
+          [22, 104],
+        ]) {
+          el('path', { d: `M ${x} 0 L ${x} ${-h}`, ...line }, g);
+          el('path', { d: `M ${x - 12} ${-h + 6} L ${x + 26} ${-h + 6}`, ...line }, g);
+          el('path', { d: `M ${x + 18} ${-h + 6} L ${x + 18} ${-h + 20}`, ...line, opacity: 0.6 }, g);
+        }
+      }
+    }
+
+    const NODEG = PROPS.map((n) => {
       const g = el('g', {}, gProps);
-      el('ellipse', { cx: 0, cy: 0, rx: 9, ry: 3, fill: '#000', opacity: 0.42 }, g);
-      el(
-        'path',
-        {
-          d: 'M -7 0 L -7 -9 L 0 -13 L 7 -9 L 7 0 L 0 3.5 Z',
-          fill: T.panel,
-          stroke: T.accent,
-          'stroke-width': 1,
-          'stroke-linejoin': 'round',
-        },
-        g
-      );
-      el('path', { d: 'M -7 -9 L 0 -13 L 7 -9 L 0 -5.5 Z', fill: T.accent, opacity: 0.85 }, g);
+      const wide = n.kind === 'city';
+      el('ellipse', { cx: 0, cy: 0, rx: wide ? 62 : 13, ry: 3.4, fill: '#000', opacity: T.stars ? 0.42 : 0.12 }, g);
+      drawProp(g, n.kind);
       const t = el(
         'text',
-        { x: 0, y: -18, 'text-anchor': 'middle', fill: T.accent, 'font-size': 6.5, class: 'leap-label' },
+        { x: 0, y: -(n.h + 11), 'text-anchor': 'middle', fill: T.accent, 'font-size': 6.4, class: 'leap-label' },
         g
       );
       t.textContent = n.label;
+      if (n.sub) {
+        const st = el(
+          'text',
+          { x: 0, y: -(n.h + 4), 'text-anchor': 'middle', fill: T.dim, 'font-size': 4.8, class: 'leap-mono' },
+          g
+        );
+        st.textContent = n.sub;
+      }
       return { g };
     });
 
@@ -945,6 +1033,10 @@ const { theme = 'paper' } = Astro.props;
         v.p.label!.setAttribute('y', ly.toFixed(1));
         v.p.label!.setAttribute('font-size', fs.toFixed(1));
         v.p.label!.setAttribute('opacity', clamp((v.R - 14) / 60, 0, 1).toFixed(2));
+        v.p.sublabel!.setAttribute('y', (ly + fs * 1.15).toFixed(1));
+        v.p.sublabel!.setAttribute('font-size', (fs * 0.6).toFixed(1));
+        /* the product name only earns its ink once the planet is properly near */
+        v.p.sublabel!.setAttribute('opacity', clamp((v.R - 60) / 90, 0, 0.85).toFixed(2));
       }
 
       const tvis = terrainVisible(t);
@@ -1011,12 +1103,12 @@ const { theme = 'paper' } = Astro.props;
       if (tvis) {
         gProps.setAttribute('opacity', gTerr.getAttribute('opacity') || '1');
         NODEG.forEach((ng, k) => {
-          if (onAzure) {
+          const n = PROPS[k];
+          if (onAzure !== (n.world === 'azure')) {
             ng.g.setAttribute('display', 'none');
             return;
           }
-          const n = NODES[k],
-            s = proj(Vw, [n.x, hf(n.x, n.z), n.z]);
+          const s = proj(Vw, [n.x, hf(n.x, n.z), n.z]);
           if (!s) {
             ng.g.setAttribute('display', 'none');
             return;
@@ -1035,11 +1127,12 @@ const { theme = 'paper' } = Astro.props;
         if (showBike) {
           const riding = t < T_OFF;
           const bt = clamp(t / T_RIDE, 0, 1);
+          /* the ride passes the chain in order */
           const route = [
-            { x: -40, z: 78 },
-            { x: 16, z: 146 },
-            { x: 56, z: 70 },
-            { x: 24, z: 64 },
+            { x: -50, z: 102 },
+            { x: 8, z: 128 },
+            { x: 62, z: 86 },
+            { x: 20, z: 64 },
           ];
           const seg = clamp(bt * 3, 0, 2.9999);
           const i = Math.floor(seg),
@@ -1095,8 +1188,8 @@ const { theme = 'paper' } = Astro.props;
             : '0'
         );
         if (shipShown) {
-          const gx0 = onAzure ? 18 : 44,
-            gz0 = onAzure ? 86 : 72;
+          const gx0 = onAzure ? 52 : 44,
+            gz0 = onAzure ? 82 : 72;
           /* Only ~65 units from the camera, so a big lift throws it clean off
              the top of the frame; 18 units already reads as a decisive climb. */
           const lift =
@@ -1115,8 +1208,9 @@ const { theme = 'paper' } = Astro.props;
 
         if (onAzure) {
           const k = clamp((t - T_TOUCH - 1.2) / 3, 0, 1);
-          const wx = lerp(30, 64, k),
-            wz = lerp(84, 72, k);
+          /* he walks out of the ship and off toward the city */
+          const wx = lerp(34, 22, k),
+            wz = lerp(84, 106, k);
           const s = proj(Vw, [wx, hf(wx, wz), wz]);
           if (s) {
             walkerAz.g.setAttribute('opacity', clamp(k * 5, 0, 1).toFixed(2));
