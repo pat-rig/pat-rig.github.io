@@ -315,15 +315,17 @@ const { theme = 'paper' } = Astro.props;
     T_ATSITE = 16.6,
     T_BUILT = 18.6,
     /* then the finished hut simply sits there, long enough to register */
-    T_OFF = 21,
-    T_BOARD = 23,
-    T_LAUNCH = 24,
-    T_COCK = 42,
-    T_TOUCH = 46.6,
-    T_TEAM = 47.5,
-    T_FENCE = 47.9,
-    T_RISE = 48.9,
-    DUR = 55.6;
+    T_ARRIVE = 20.4,
+    T_DOWN = 22.2,
+    T_OFF = 22.6,
+    T_BOARD = 24.6,
+    T_LAUNCH = 25.6,
+    T_COCK = 43.6,
+    T_TOUCH = 48.2,
+    T_TEAM = 49.1,
+    T_FENCE = 49.5,
+    T_RISE = 50.5,
+    DUR = 57.2;
   /* The frame drawn when motion is reduced: the ship abeam of a planet. */
   const STILL_T = 22.6;
 
@@ -424,13 +426,13 @@ const { theme = 'paper' } = Astro.props;
     { t: 13.2, title: 'Fittings', text: 'And the parts that never came out of a log.' },
     { t: 16.6, title: 'Building', text: 'Then you put it up yourself, one piece at a time.' },
     { t: 18.8, title: 'A day’s work', text: 'One person, one thing at a time, and this is where it ends.' },
-    { t: 21.2, title: 'AI AGENT', text: 'It was parked there the whole time.' },
-    { t: 24.2, title: 'With agents', text: 'Same human. The range is what changed.' },
-    { t: 27.5, title: 'Passing through', text: 'Each of these was out of reach on a bicycle.' },
-    { t: 42.2, title: 'Approach', text: 'Fuel costs money. You pick the trips worth taking.' },
-    { t: 47.2, title: 'You are not the one building', text: 'They fan out. He stands still.' },
+    { t: 20.6, title: 'AI AGENT', text: 'Something comes down on the hill beside it.' },
+    { t: 25.8, title: 'With agents', text: 'Same human. The range is what changed.' },
+    { t: 29.1, title: 'Passing through', text: 'Each of these was out of reach on a bicycle.' },
+    { t: 43.8, title: 'Approach', text: 'Fuel costs money. You pick the trips worth taking.' },
+    { t: 48.8, title: 'You are not the one building', text: 'They fan out. He stands still.' },
     {
-      t: 53,
+      t: 54.6,
       title: 'The same craft',
       text: 'In parallel, behind a fence, on a hoist that never stops.',
     },
@@ -719,19 +721,13 @@ const { theme = 'paper' } = Astro.props;
         el('path', { d: 'M -17 -17 L 0 -27 L 17 -17 Z', ...solid }, g);
         el('path', { d: 'M -4 0 L -4 -9 L 4 -9 L 4 0', ...line }, g);
         /*
-         * The blade. It used to sit clear of the building at ground level, where
-         * it read as a rising sun rather than as a saw — so it is now smaller,
-         * lifted to axle height, and overlaps the wall it is mounted on.
+         * No saw blade. A toothed disc beside the building read as a rising sun
+         * however it was sized or placed, and the label plus the planks stacked
+         * outside already say what happens here. A ramp says the rest: material
+         * goes in at one end.
          */
-        el('path', { d: 'M -14 -11 L -17 -11', ...line }, g);
-        el('circle', { cx: -18, cy: -11, r: 4, ...solid }, g);
-        for (let k = 0; k < 8; k++) {
-          const a = (k * Math.PI) / 4;
-          const c = Math.cos(a) * 4,
-            sn = Math.sin(a) * 4;
-          el('path', { d: `M ${-18 + c} ${-11 + sn} L ${-18 + c * 1.4} ${-11 + sn * 1.4}`, ...line }, g);
-        }
-        el('circle', { cx: -18, cy: -11, r: 0.9, fill: T.ink }, g);
+        el('path', { d: 'M -14 -4 L -23 0', ...line }, g);
+        el('path', { d: 'M -14 -8 L -23 -4', ...line }, g);
         h.planks = plankPile(g, 22);
       } else if (kind === 'bench') {
         el('path', { d: 'M -12 0 L -12 -9 M 12 0 L 12 -9', ...line }, g);
@@ -987,9 +983,11 @@ const { theme = 'paper' } = Astro.props;
       { t: 13.2, pos: [22, 26, -30] as Vec, tgt: [12, 6, 86] as Vec },
       /* settles on the finished hut and holds there */
       { t: 18.6, pos: [26, 21, -12] as Vec, tgt: [6, 6, 74] as Vec },
-      { t: 21, pos: [30, 20, -6] as Vec, tgt: [8, 6, 76] as Vec },
-      { t: 23, pos: [52, 17, 22] as Vec, tgt: [22, 7, 96] as Vec },
-      { t: 24, pos: [60, 22, 14] as Vec, tgt: [20, 12, 92] as Vec },
+      /* pulls back and lifts a little to take in the descent */
+      { t: 20.4, pos: [30, 24, -10] as Vec, tgt: [16, 14, 80] as Vec },
+      { t: 22.6, pos: [38, 20, 4] as Vec, tgt: [26, 8, 84] as Vec },
+      { t: 24.6, pos: [52, 17, 22] as Vec, tgt: [22, 7, 96] as Vec },
+      { t: 25.6, pos: [60, 22, 14] as Vec, tgt: [20, 12, 92] as Vec },
     ];
     const flightFrac = (t: number) => clamp((t - T_LAUNCH) / (T_TOUCH - T_LAUNCH), 0, 1);
 
@@ -1380,29 +1378,41 @@ const { theme = 'paper' } = Astro.props;
           barrowG.setAttribute('opacity', '0');
         }
 
-        const shipShown = (!onAzure && t > T_OFF - 0.6 && t < T_LAUNCH) || onAzure;
+        const shipShown = (!onAzure && t >= T_ARRIVE && t < T_LAUNCH) || onAzure;
         shipG.setAttribute(
           'opacity',
           shipShown
-            ? (onAzure ? smooth(T_TOUCH, T_TOUCH + 0.8, t) : smooth(T_OFF - 0.6, T_OFF + 0.8, t)).toFixed(2)
+            ? (onAzure ? smooth(T_TOUCH, T_TOUCH + 0.8, t) : smooth(T_ARRIVE, T_ARRIVE + 0.4, t)).toFixed(2)
             : '0'
         );
         if (shipShown) {
           const gx0 = onAzure ? 52 : 44,
             gz0 = onAzure ? 82 : 72;
+          /*
+           * It flies in rather than appearing: drops out of the sky, drifting in
+           * from one side, and decelerates into the ground. Squared falloff so
+           * it comes down fast and settles slowly, which is what landing looks
+           * like.
+           */
+          const dk = onAzure ? 1 : clamp((t - T_ARRIVE) / (T_DOWN - T_ARRIVE), 0, 1);
+          const fall = Math.pow(1 - dk, 2);
+          const alt = fall * 76;
+          const drift = fall * 30;
           /* Only ~65 units from the camera, so a big lift throws it clean off
              the top of the frame; 18 units already reads as a decisive climb. */
           const lift =
             !onAzure && t > T_LAUNCH - 1.3 ? Math.pow(clamp((t - (T_LAUNCH - 1.3)) / 1.3, 0, 1), 2) * 18 : 0;
-          const s = proj(Vw, [gx0, hf(gx0, gz0) + lift, gz0]);
+          const s = proj(Vw, [gx0 + drift, hf(gx0, gz0) + alt + lift, gz0]);
           if (s) {
             shipG.setAttribute(
               'transform',
               `translate(${s[0].toFixed(1)} ${s[1].toFixed(1)}) scale(${(s[3] * S_SHIP).toFixed(3)})`
             );
-            shipStruts.setAttribute('opacity', lift > 2 ? '0' : '1');
-            shipShadow.setAttribute('opacity', lift > 2 ? '0' : '0.45');
-            liftFlame.setAttribute('opacity', lift > 2 ? '0.9' : '0');
+            /* gear comes down on short finals */
+            shipStruts.setAttribute('opacity', alt > 14 || lift > 2 ? '0' : '1');
+            /* the shadow belongs to the ground, so it only exists once it is there */
+            shipShadow.setAttribute('opacity', alt > 3 || lift > 2 ? '0' : '0.45');
+            liftFlame.setAttribute('opacity', alt > 1.5 || lift > 2 ? '0.9' : '0');
           }
         }
 
