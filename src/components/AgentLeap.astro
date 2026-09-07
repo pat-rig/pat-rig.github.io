@@ -288,7 +288,7 @@ const { theme = 'paper' } = Astro.props;
       terrLow: '#0f1720', terrHigh: BIN.b4, terrStroke: BIN.b3, contour: BIN.b5,
       cockFill: '#0a0f1a', cockFrame: '#6f88b4', hudFill: '#14171c',
       hudStroke: '#2a313b', gaugeTrack: '#1b2740', flash: '#dff1ff',
-      hullFill: '#e7eaee', planetFill: 0.18, stars: true, glow: 0.9,
+      hullFill: '#e7eaee', planetFill: 0.18, stars: true, starShape: 'dot', glow: 0.9,
       accent: BIN.b6, haze: 0.3, monoPlanets: false,
       wing: BIN.b3, wingLit: BIN.b4, wingEdge: BIN.b5, canopy: BIN.b5,
     },
@@ -298,7 +298,7 @@ const { theme = 'paper' } = Astro.props;
       terrLow: '#f4f1ea', terrHigh: BIN.b3, terrStroke: '#1f1b14', contour: '#55503f',
       cockFill: '#f4f1ea', cockFrame: '#1f1b14', hudFill: '#ece7dc',
       hudStroke: '#d3c9b4', gaugeTrack: '#e1dacb', flash: '#ffffff',
-      hullFill: '#f4f1ea', planetFill: 0.1, stars: false, glow: 0.28,
+      hullFill: '#f4f1ea', planetFill: 0.1, stars: true, starShape: 'asterisk', glow: 0.28,
       accent: BIN.b1, haze: 0.12, monoPlanets: true,
       wing: '#e1dacb', wingLit: '#d3c9b4', wingEdge: '#1f1b14', canopy: BIN.b1,
     },
@@ -509,13 +509,38 @@ const { theme = 'paper' } = Astro.props;
 
     let seed = 11;
     const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
-    const STARS: { p: Vec; b: number; el: Element }[] = [];
-    for (let i = 0; T.stars && i < 420; i++)
+    /*
+     * On the dark treatment a star is a dot. On paper a dot is a speck of dirt,
+     * so a star is drawn as a six-point asterisk instead — a typographic mark,
+     * which is legible as a star at a size a dot would just look like grime.
+     * Fewer of them too: asterisks carry far more ink than dots.
+     */
+    const ASTERISK =
+      'M -1 0 L 1 0 M -0.5 -0.866 L 0.5 0.866 M -0.5 0.866 L 0.5 -0.866';
+    const asterisks = T.starShape === 'asterisk';
+    const STARS: { p: Vec; b: number; rot: number; el: Element }[] = [];
+    for (let i = 0; T.stars && i < (asterisks ? 150 : 420); i++)
       STARS.push({
         p: [(rnd() - 0.5) * 5200, (rnd() - 0.5) * 3200, rnd() * 5600 - 400],
         b: 0.7 + rnd() * 2.1,
-        el: el('circle', { cx: -99, cy: -99, r: 1, fill: INK }, gStars),
+        rot: rnd() * 60,
+        el: asterisks
+          ? el(
+              'path',
+              {
+                d: ASTERISK,
+                fill: 'none',
+                stroke: T.ink,
+                'stroke-width': 0.26,
+                'stroke-linecap': 'round',
+                opacity: 0,
+              },
+              gStars
+            )
+          : el('circle', { cx: -99, cy: -99, r: 1, fill: INK }, gStars),
       });
+    const hideStar = (st: { el: Element }) =>
+      asterisks ? st.el.setAttribute('opacity', '0') : st.el.setAttribute('r', '0');
 
     type P = (typeof PLANETS)[number] & {
       g?: Element;
@@ -859,15 +884,25 @@ const { theme = 'paper' } = Astro.props;
         for (const s of STARS) {
           const q = proj(Vw, s.p);
           if (!q || q[0] < -60 || q[0] > 1260 || q[1] < -60 || q[1] > 660) {
-            s.el.setAttribute('r', '0');
+            hideStar(s);
             continue;
           }
-          s.el.setAttribute('cx', q[0].toFixed(1));
-          s.el.setAttribute('cy', q[1].toFixed(1));
-          s.el.setAttribute('r', clamp(s.b * q[3] * 80, 0.3, 2.6).toFixed(2));
-          s.el.setAttribute('opacity', clamp(q[3] * 260, 0.15, 0.95).toFixed(2));
+          if (asterisks) {
+            const sz = clamp(s.b * q[3] * 95, 1.2, 5);
+            s.el.setAttribute(
+              'transform',
+              `translate(${q[0].toFixed(1)} ${q[1].toFixed(1)}) rotate(${s.rot.toFixed(0)}) scale(${sz.toFixed(2)})`
+            );
+            /* Ink is far heavier than white on black — keep them delicate. */
+            s.el.setAttribute('opacity', clamp(q[3] * 150, 0.1, 0.55).toFixed(2));
+          } else {
+            s.el.setAttribute('cx', q[0].toFixed(1));
+            s.el.setAttribute('cy', q[1].toFixed(1));
+            s.el.setAttribute('r', clamp(s.b * q[3] * 80, 0.3, 2.6).toFixed(2));
+            s.el.setAttribute('opacity', clamp(q[3] * 260, 0.15, 0.95).toFixed(2));
+          }
         }
-      } else for (const s of STARS) s.el.setAttribute('r', '0');
+      } else for (const s of STARS) hideStar(s);
 
       gSpace.setAttribute(
         'opacity',
