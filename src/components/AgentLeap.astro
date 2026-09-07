@@ -49,9 +49,6 @@ const { theme = 'paper' } = Astro.props;
       aria-label="An animation: a cyclist crossing a small range of hills, then boarding a
       starfighter marked AI AGENT and flying past planets labelled CI/CD, Databases, Web apps
       and APIs, before landing on one called Azure."></svg>
-    <div class="leap__hud">
-      <p class="leap__chapter"><b data-leap-title></b><span data-leap-text></span></p>
-    </div>
     <button class="leap__toggle" type="button" data-leap-toggle aria-label="Pause animation">
       Pause
     </button>
@@ -103,44 +100,6 @@ const { theme = 'paper' } = Astro.props;
      * plate's own ground — so the seam is invisible either way.
      */
     max-height: 78vh;
-  }
-
-  .leap__hud {
-    position: absolute;
-    inset: auto 0 0 0;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: var(--space-6);
-    /*
-     * Indent to the shell's own edge, so the readouts line up with the masthead
-     * and the article rather than floating against the raw screen edge.
-     */
-    padding: var(--space-4) max(var(--gutter), calc((100vw - var(--width-wide)) / 2 + var(--gutter)));
-    pointer-events: none;
-  }
-
-  .leap__chapter {
-    margin: 0;
-  }
-
-  .leap__chapter b {
-    display: block;
-    font-size: var(--step--1);
-    color: var(--text-0);
-  }
-
-  .leap--board .leap__chapter b {
-    color: #e7eaee;
-  }
-
-  .leap__chapter span {
-    font-size: var(--step--1);
-    color: var(--text-1);
-  }
-
-  .leap--board .leap__chapter span {
-    color: #a6aebb;
   }
 
   .leap__toggle {
@@ -424,24 +383,6 @@ const { theme = 'paper' } = Astro.props;
        skyline and away from the tower labels */
     { x: 58, z: 116, world: 'azure', kind: 'title', h: 112, lmul: 1.45, label: 'what I can build with agents' },
   ];
-  const CHAPTERS = [
-    { t: 0, title: 'Before agents', text: 'A few hills, reachable at pedalling speed.' },
-    { t: 5.2, title: 'Raw material', text: 'Everything starts as something you have to go and fell.' },
-    { t: 9.8, title: 'Through the mill', text: 'The same cut, applied to everything you feed it.' },
-    { t: 13.2, title: 'Fittings', text: 'And the parts that never came out of a log.' },
-    { t: 16.6, title: 'Building', text: 'Then you put it up yourself, one piece at a time.' },
-    { t: 18.8, title: 'A day’s work', text: 'One person, one thing at a time, and this is where it ends.' },
-    { t: 20.6, title: 'AI AGENT', text: 'Something comes down on the hill beside it.' },
-    { t: 25.8, title: 'With agents', text: 'Same human. The range is what changed.' },
-    { t: 29.1, title: 'Passing through', text: 'Each of these was out of reach on a bicycle.' },
-    { t: 43.8, title: 'Approach', text: 'Fuel costs money. You pick the trips worth taking.' },
-    { t: 48.8, title: 'You are not the one building', text: 'They fan out. He stands still.' },
-    {
-      t: 54.6,
-      title: 'The same craft',
-      text: 'In parallel, behind a fence, on a hoist that never stops.',
-    },
-  ];
 
   function catmull(P: Vec[], s: number): Vec {
     const n = P.length - 1,
@@ -478,8 +419,6 @@ const { theme = 'paper' } = Astro.props;
      */
     if (T.monoPlanets) for (const p of PLANETS) p.c = T.ink;
     const svg = root.querySelector('.leap__svg') as SVGSVGElement;
-    const titleEl = root.querySelector('[data-leap-title]') as HTMLElement;
-    const textEl = root.querySelector('[data-leap-text]') as HTMLElement;
     const toggle = root.querySelector('[data-leap-toggle]') as HTMLButtonElement;
 
     /* arc-length table, so the ship holds a steady speed through the turns */
@@ -1531,10 +1470,6 @@ const { theme = 'paper' } = Astro.props;
         t > T_TOUCH - 0.35 && t < T_TOUCH + 0.5 ? ((1 - Math.abs(t - T_TOUCH) / 0.45) * 0.85).toFixed(2) : '0'
       );
 
-      let ch = CHAPTERS[0];
-      for (const c2 of CHAPTERS) if (t >= c2.t) ch = c2;
-      titleEl.textContent = ch.title;
-      textEl.textContent = ch.text;
     }
 
     const reduce = matchMedia('(prefers-reduced-motion: reduce)');
