@@ -366,14 +366,12 @@ const { theme = 'paper' } = Astro.props;
   /* `c` is filled in per treatment in build() — the home world is drawn in the
      scene's own neutral rather than one of the accent bins. */
   const HOMEP = { pos: [0, -330, 80] as Vec, r: 300, c: '#8c95a3', name: 'my laptop' };
-  /* The sub-label names something real, so each world is a place a reader has
-     actually been rather than an abstraction. Azure's says what it costs. */
   const PLANETS = [
-    { name: 'CI / CD', sub: 'GitHub Actions', pos: [-400, 60, 980] as Vec, r: 120, c: BIN.b6, motif: 'arcs' },
-    { name: 'Databases', sub: 'Postgres', pos: [480, -80, 1760] as Vec, r: 145, c: BIN.b4, motif: 'discs' },
-    { name: 'Web apps', sub: 'React', pos: [-450, 120, 2540] as Vec, r: 130, c: BIN.b1, motif: 'panes' },
-    { name: 'APIs & infra', sub: 'Kubernetes', pos: [430, 190, 3320] as Vec, r: 110, c: BIN.b5, motif: 'hex' },
-    { name: 'Azure', sub: 'rented by the hour', pos: [0, -30, 4520] as Vec, r: 300, c: BIN.b2, motif: 'grid' },
+    { name: 'CI / CD', pos: [-400, 60, 980] as Vec, r: 120, c: BIN.b6, motif: 'arcs' },
+    { name: 'Databases', pos: [480, -80, 1760] as Vec, r: 145, c: BIN.b4, motif: 'discs' },
+    { name: 'Web apps', pos: [-450, 120, 2540] as Vec, r: 130, c: BIN.b1, motif: 'panes' },
+    { name: 'APIs & infra', pos: [430, 190, 3320] as Vec, r: 110, c: BIN.b5, motif: 'hex' },
+    { name: 'Azure', pos: [0, -30, 4520] as Vec, r: 300, c: BIN.b2, motif: 'grid' },
   ];
   /*
    * The planets flank the corridor and the ship threads between them, coming no
@@ -411,11 +409,11 @@ const { theme = 'paper' } = Astro.props;
    * Deliberately the same timber language, at a size the hills cannot reach.
    */
   const PROPS = [
-    { x: -60, z: 96, world: 'home', kind: 'forest', h: 34, label: 'raw data', sub: 'some of it labelled' },
-    { x: 6, z: 132, world: 'home', kind: 'mill', h: 27, label: 'preprocessing', sub: 'pandas' },
-    { x: 64, z: 92, world: 'home', kind: 'bench', h: 27, label: 'experiments', sub: 'Jupyter' },
-    { x: 6, z: 60, world: 'home', kind: 'hut', h: 27, label: 'what I could build', sub: 'model.pkl' },
-    { x: 20, z: 128, world: 'azure', kind: 'city', h: 98, label: 'what gets built here', sub: '' },
+    { x: -60, z: 96, world: 'home', kind: 'forest', h: 34, label: 'raw data' },
+    { x: 6, z: 132, world: 'home', kind: 'mill', h: 27, label: 'preprocessing' },
+    { x: 64, z: 92, world: 'home', kind: 'bench', h: 27, label: 'experiments' },
+    { x: 6, z: 60, world: 'home', kind: 'hut', h: 27, label: 'what I could build' },
+    { x: 20, z: 128, world: 'azure', kind: 'city', h: 98, label: 'what gets built here' },
   ];
   const CHAPTERS = [
     { t: 0, title: 'Before agents', text: 'A few hills, reachable at pedalling speed.' },
@@ -563,7 +561,6 @@ const { theme = 'paper' } = Astro.props;
       rim?: Element;
       motifG?: Element;
       label?: Element;
-      sublabel?: Element;
       grad?: string;
     };
     const ALL = [...PLANETS, HOMEP] as P[];
@@ -581,8 +578,6 @@ const { theme = 'paper' } = Astro.props;
       p.motifG = el('g', {}, p.g);
       p.label = el('text', { 'text-anchor': 'middle', fill: p.c, class: 'leap-label' }, p.g);
       p.label.textContent = p.name;
-      p.sublabel = el('text', { 'text-anchor': 'middle', fill: T.dim, class: 'leap-mono' }, p.g);
-      p.sublabel.textContent = (p as { sub?: string }).sub ?? '';
     }
     function drawMotif(p: P, R: number) {
       const m = p.motifG!;
@@ -737,14 +732,6 @@ const { theme = 'paper' } = Astro.props;
         g
       );
       t.textContent = n.label;
-      if (n.sub) {
-        const st = el(
-          'text',
-          { x: 0, y: -(n.h + 4), 'text-anchor': 'middle', fill: T.dim, 'font-size': 4.8, class: 'leap-mono' },
-          g
-        );
-        st.textContent = n.sub;
-      }
       return { g };
     });
 
@@ -1033,10 +1020,6 @@ const { theme = 'paper' } = Astro.props;
         v.p.label!.setAttribute('y', ly.toFixed(1));
         v.p.label!.setAttribute('font-size', fs.toFixed(1));
         v.p.label!.setAttribute('opacity', clamp((v.R - 14) / 60, 0, 1).toFixed(2));
-        v.p.sublabel!.setAttribute('y', (ly + fs * 1.15).toFixed(1));
-        v.p.sublabel!.setAttribute('font-size', (fs * 0.6).toFixed(1));
-        /* the product name only earns its ink once the planet is properly near */
-        v.p.sublabel!.setAttribute('opacity', clamp((v.R - 60) / 90, 0, 0.85).toFixed(2));
       }
 
       const tvis = terrainVisible(t);
