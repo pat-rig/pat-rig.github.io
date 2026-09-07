@@ -417,7 +417,10 @@ const { theme = 'paper' } = Astro.props;
     { x: 24, z: 142, world: 'azure', kind: 'tower', th: 104, rows: 7, h: 104, label: 'model' },
     { x: 46, z: 126, world: 'azure', kind: 'tower', th: 68, rows: 5, h: 68, label: 'API' },
     { x: 68, z: 110, world: 'azure', kind: 'tower', th: 56, rows: 4, h: 56, label: 'web app' },
-    { x: 34, z: 120, world: 'azure', kind: 'site', h: 92, label: 'what I can build with agents' },
+    { x: 34, z: 120, world: 'azure', kind: 'site', h: 0, label: '' },
+    /* carries no art — it exists only to place the closing line, clear of the
+       skyline and away from the tower labels */
+    { x: 58, z: 116, world: 'azure', kind: 'title', h: 112, lmul: 1.7, label: 'what I can build with agents' },
   ];
   const CHAPTERS = [
     { t: 0, title: 'Before agents', text: 'A few hills, reachable at pedalling speed.' },
@@ -784,10 +787,10 @@ const { theme = 'paper' } = Astro.props;
 
     const NODEG = PROPS.map((n) => {
       const g = el('g', {}, gProps);
-      const wide = n.kind === 'site';
-      const shadowOp = n.kind === 'site' ? 0 : T.stars ? 0.42 : 0.12;
+      const wide = n.kind === 'site' || n.kind === 'title';
+      const shadowOp = n.kind === 'site' || n.kind === 'title' ? 0 : T.stars ? 0.42 : 0.12;
       const shadow = el('ellipse', { cx: 0, cy: 0, rx: wide ? 62 : 13, ry: 3.4, fill: '#000', opacity: shadowOp }, g);
-      const h = drawProp(g, n.kind, n as { th?: number; rows?: number });
+      const h = n.kind === 'title' ? {} : drawProp(g, n.kind, n as { th?: number; rows?: number });
       const t = el(
         'text',
         { x: 0, y: -(n.h + 11), 'text-anchor': 'middle', fill: T.accent, 'font-size': 6.4, class: 'leap-label' },
@@ -804,7 +807,8 @@ const { theme = 'paper' } = Astro.props;
       HUT_LABEL = NODEG[3].label;
     /* the four towers, then the site furniture */
     const TOWERS = [4, 5, 6, 7].map((i) => ({ node: NODEG[i], prop: PROPS[i] }));
-    const SITE = NODEG[8].h;
+    const SITE = NODEG[PROPS.findIndex((p) => p.kind === 'site')].h;
+    const TITLE_NODE = NODEG[PROPS.findIndex((p) => p.kind === 'title')];
 
     /* the barrow: one wheel, two handles, and whatever it is carrying */
     const barrowG = el('g', { opacity: 0 }, gProps);
@@ -1217,8 +1221,9 @@ const { theme = 'paper' } = Astro.props;
           );
           /* the group is scaled by perspective, so undo that for the label */
           const lu = labelUnits / Math.max(clamp(s[3] * S_NODE, 0.001, 2.4), 0.001);
-          ng.label.setAttribute('font-size', clamp(lu, 5, 30).toFixed(2));
-          ng.label.setAttribute('y', (-(n.h + 6) - lu * 0.8).toFixed(1));
+          const lm = (n as { lmul?: number }).lmul ?? 1;
+          ng.label.setAttribute('font-size', clamp(lu * lm, 5, 30).toFixed(2));
+          ng.label.setAttribute('y', (-(n.h + 6) - lu * lm * 0.8).toFixed(1));
         });
 
         const showBike = !onAzure && t < T_BOARD;
@@ -1460,7 +1465,7 @@ const { theme = 'paper' } = Astro.props;
           });
 
           /* the answer to the hut's label, once there is something to answer with */
-          NODEG[8].label.setAttribute('opacity', smooth(T_RISE + 4, T_RISE + 4.9, t).toFixed(2));
+          TITLE_NODE.label.setAttribute('opacity', smooth(T_RISE + 4, T_RISE + 4.9, t).toFixed(2));
           /* the perimeter is drawn before anything goes up inside it */
           SITE.fence!.setAttribute('opacity', (smooth(T_FENCE, T_FENCE + 1.2, t) * 0.75).toFixed(2));
           /* and the hoist just keeps going */
