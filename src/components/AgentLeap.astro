@@ -170,8 +170,11 @@ const { theme = 'paper' } = Astro.props;
     opacity: 1;
   }
 
-  /* With motion reduced the control is the only way in, so it always shows. */
-  @media (prefers-reduced-motion: reduce) {
+  /*
+   * With motion reduced the control is the only way in, and on a touch screen
+   * there is no hover to reveal it — so in both cases it simply stays visible.
+   */
+  @media (prefers-reduced-motion: reduce), (hover: none) {
     .leap__toggle {
       opacity: 1;
     }
@@ -293,13 +296,25 @@ const { theme = 'paper' } = Astro.props;
   const gx = (i: number) => lerp(TX0, TX1, i / COLS);
   const gz = (j: number) => lerp(TZ0, TZ1, j / ROWS);
 
-  const T_RIDE = 7,
-    T_OFF = 9.2,
-    T_BOARD = 12.4,
-    T_LAUNCH = 14,
-    T_COCK = 32,
-    T_TOUCH = 36.6,
-    DUR = 42;
+  /*
+   * The ground act now covers a whole build — ride, fell, barrow the logs to the
+   * mill, barrow the planks back, raise the hut — so it runs to 19.5s and the
+   * film to 47.5s. Everything after launch keeps its original 22.6s of flight
+   * and 5.4s of landing.
+   */
+  const T_RIDE = 4.5,
+    T_FELL = 5.6,
+    T_LOADED = 7.2,
+    T_ATMILL = 9.6,
+    T_MILLED = 11.2,
+    T_ATSITE = 13.4,
+    T_BUILT = 16,
+    T_OFF = 16.2,
+    T_BOARD = 18.4,
+    T_LAUNCH = 19.5,
+    T_COCK = 37.5,
+    T_TOUCH = 42.1,
+    DUR = 47.5;
   /* The frame drawn when motion is reduced: the ship abeam of a planet. */
   const STILL_T = 22.6;
 
@@ -384,13 +399,15 @@ const { theme = 'paper' } = Astro.props;
   ];
   const CHAPTERS = [
     { t: 0, title: 'Before agents', text: 'A few hills, reachable at pedalling speed.' },
-    { t: 7.2, title: 'He stops', text: 'The end of the road a bicycle can reach.' },
-    { t: 9.4, title: 'AI AGENT', text: 'It was parked there the whole time.' },
-    { t: 14.2, title: 'With agents', text: 'Same human. The range is what changed.' },
-    { t: 18, title: 'Passing through', text: 'Each of these was out of reach on a bicycle.' },
-    { t: 32.2, title: 'Approach', text: 'Fuel costs money. You pick the trips worth taking.' },
+    { t: 5.6, title: 'Raw material', text: 'Everything starts as something you have to go and fell.' },
+    { t: 9.6, title: 'Through the mill', text: 'The same cut, applied to everything you feed it.' },
+    { t: 13.4, title: 'Building', text: 'Then you put it up yourself, one piece at a time.' },
+    { t: 16.2, title: 'AI AGENT', text: 'It was parked there the whole time.' },
+    { t: 19.7, title: 'With agents', text: 'Same human. The range is what changed.' },
+    { t: 23, title: 'Passing through', text: 'Each of these was out of reach on a bicycle.' },
+    { t: 37.7, title: 'Approach', text: 'Fuel costs money. You pick the trips worth taking.' },
     {
-      t: 37.2,
+      t: 42.7,
       title: 'And then you explore',
       text: 'Same craft, same timber. You just get to build at another size.',
     },
@@ -617,22 +634,45 @@ const { theme = 'paper' } = Astro.props;
     const line = { fill: 'none', stroke: T.ink, 'stroke-width': 1.1, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' };
     const solid = { fill: T.panel, stroke: T.ink, 'stroke-width': 1.1, 'stroke-linejoin': 'round' };
 
-    function drawProp(g: Element, kind: string) {
+    /* Handles for the parts that move: a tree that comes down, the piles that
+       appear and go, and the hut that goes up in stages. */
+    type Handles = Partial<Record<'falling' | 'logs' | 'planks' | 'walls' | 'roof' | 'trim', Element>>;
+
+    function tree(g: Element, x: number, h: number, tag: boolean) {
+      const w = h * 0.26;
+      el('path', { d: `M ${x} 0 L ${x} ${-h * 0.24}`, ...line }, g);
+      el('path', { d: `M ${x} ${-h * 0.6} L ${x + w * 1.35} 0 L ${x - w * 1.35} 0 Z`, ...solid }, g);
+      el('path', { d: `M ${x} ${-h} L ${x + w} ${-h * 0.44} L ${x - w} ${-h * 0.44} Z`, ...solid }, g);
+      /* a ribbon on a tree is a labelled example */
+      if (tag) el('rect', { x: x + w * 0.5, y: -h * 0.72, width: 3.2, height: 2.1, fill: T.accent }, g);
+    }
+    function logPile(g: Element, x: number) {
+      const p = el('g', { opacity: 0 }, g);
+      for (const [lx, ly] of [
+        [x - 3.2, -3],
+        [x + 3.2, -3],
+        [x, -8.2],
+      ])
+        el('circle', { cx: lx, cy: ly, r: 3.2, ...solid }, p);
+      return p;
+    }
+    function plankPile(g: Element, x: number) {
+      const p = el('g', { opacity: 0 }, g);
+      for (let k = 0; k < 3; k++)
+        el('rect', { x: x - 7, y: -3.4 * (k + 1), width: 14, height: 2.6, ...solid }, p);
+      return p;
+    }
+
+    function drawProp(g: Element, kind: string): Handles {
+      const h: Handles = {};
       if (kind === 'forest') {
-        const trees: [number, number, number][] = [
-          [-15, 25, 0],
-          [-5, 34, 1],
-          [5, 22, 0],
-          [15, 30, 1],
-        ];
-        for (const [x, h, tag] of trees) {
-          const w = h * 0.26;
-          el('path', { d: `M ${x} 0 L ${x} ${-h * 0.24}`, ...line }, g);
-          el('path', { d: `M ${x} ${-h * 0.6} L ${x + w * 1.35} 0 L ${x - w * 1.35} 0 Z`, ...solid }, g);
-          el('path', { d: `M ${x} ${-h} L ${x + w} ${-h * 0.44} L ${x - w} ${-h * 0.44} Z`, ...solid }, g);
-          /* a ribbon on a tree is a labelled example */
-          if (tag) el('rect', { x: x + w * 0.5, y: -h * 0.72, width: 3.2, height: 2.1, fill: T.accent }, g);
-        }
+        tree(g, -15, 25, false);
+        tree(g, -5, 34, true);
+        tree(g, 5, 22, false);
+        /* this one comes down; its own group so it can hinge at the stump */
+        h.falling = el('g', {}, g);
+        tree(h.falling, 15, 30, true);
+        h.logs = logPile(g, 24);
       } else if (kind === 'mill') {
         el('path', { d: 'M -14 0 L -14 -17 L 14 -17 L 14 0 Z', ...solid }, g);
         el('path', { d: 'M -17 -17 L 0 -27 L 17 -17 Z', ...solid }, g);
@@ -645,6 +685,7 @@ const { theme = 'paper' } = Astro.props;
             sn = Math.sin(a) * 6;
           el('path', { d: `M ${-20 + c} ${-9 + sn} L ${-20 + c * 1.34} ${-9 + sn * 1.34}`, ...line }, g);
         }
+        h.planks = plankPile(g, 22);
       } else if (kind === 'bench') {
         el('path', { d: 'M -12 0 L -12 -9 M 12 0 L 12 -9', ...line }, g);
         el('rect', { x: -15, y: -12, width: 30, height: 3, ...solid }, g);
@@ -653,10 +694,14 @@ const { theme = 'paper' } = Astro.props;
         el('rect', { x: 2, y: -15, width: 5, height: 3, ...solid }, g);
         el('path', { d: 'M -17 -20 L 0 -27 L 17 -20', ...line }, g);
       } else if (kind === 'hut') {
-        el('path', { d: 'M -12 0 L -12 -13 L 12 -13 L 12 0 Z', ...solid }, g);
-        el('path', { d: 'M -15 -13 L 0 -23 L 15 -13 Z', ...solid }, g);
-        el('path', { d: 'M -4 0 L -4 -8 L 4 -8 L 4 0', ...line }, g);
-        el('rect', { x: 6, y: -27, width: 4, height: 7, ...solid }, g);
+        /* three stages, so the hut is watched going up rather than just being there */
+        h.walls = el('g', { opacity: 0 }, g);
+        el('path', { d: 'M -12 0 L -12 -13 L 12 -13 L 12 0 Z', ...solid }, h.walls);
+        h.roof = el('g', { opacity: 0 }, g);
+        el('path', { d: 'M -15 -13 L 0 -23 L 15 -13 Z', ...solid }, h.roof);
+        h.trim = el('g', { opacity: 0 }, g);
+        el('path', { d: 'M -4 0 L -4 -8 L 4 -8 L 4 0', ...line }, h.trim);
+        el('rect', { x: 6, y: -27, width: 4, height: 7, ...solid }, h.trim);
       } else {
         const towers: [number, number, number][] = [
           [-70, 34, 3],
@@ -683,21 +728,39 @@ const { theme = 'paper' } = Astro.props;
           el('path', { d: `M ${x + 18} ${-h + 6} L ${x + 18} ${-h + 20}`, ...line, opacity: 0.6 }, g);
         }
       }
+      return h;
     }
 
     const NODEG = PROPS.map((n) => {
       const g = el('g', {}, gProps);
       const wide = n.kind === 'city';
-      el('ellipse', { cx: 0, cy: 0, rx: wide ? 62 : 13, ry: 3.4, fill: '#000', opacity: T.stars ? 0.42 : 0.12 }, g);
-      drawProp(g, n.kind);
+      const shadowOp = T.stars ? 0.42 : 0.12;
+      const shadow = el('ellipse', { cx: 0, cy: 0, rx: wide ? 62 : 13, ry: 3.4, fill: '#000', opacity: shadowOp }, g);
+      const h = drawProp(g, n.kind);
       const t = el(
         'text',
         { x: 0, y: -(n.h + 11), 'text-anchor': 'middle', fill: T.accent, 'font-size': 6.4, class: 'leap-label' },
         g
       );
       t.textContent = n.label;
-      return { g };
+      return { g, h, label: t, shadow, shadowOp };
     });
+    const HUT_NODE = NODEG[3];
+    const FOREST = NODEG[0].h,
+      MILL = NODEG[1].h,
+      HUT = NODEG[3].h,
+      HUT_LABEL = NODEG[3].label;
+
+    /* the barrow: one wheel, two handles, and whatever it is carrying */
+    const barrowG = el('g', { opacity: 0 }, gProps);
+    el('path', { d: 'M -9 -10 L 9 -10 L 7 -4 L -7 -4 Z', ...solid }, barrowG);
+    el('path', { d: 'M -9 -10 L -15 -13 M 9 -7 L 14 -3', ...line }, barrowG);
+    el('circle', { cx: 8, cy: -2.6, r: 2.6, ...solid }, barrowG);
+    const barrowLogs = el('g', { opacity: 0 }, barrowG);
+    for (const lx of [-4, 0, 4]) el('circle', { cx: lx, cy: -12.4, r: 2.5, ...solid }, barrowLogs);
+    const barrowPlanks = el('g', { opacity: 0 }, barrowG);
+    for (let k = 0; k < 2; k++)
+      el('rect', { x: -8, y: -13.4 - k * 2.6, width: 16, height: 2.2, ...solid }, barrowPlanks);
 
     const bikeG = el('g', {}, gProps);
     const bikeShadow = el('ellipse', { cx: 0, cy: 0, rx: 11, ry: 3.4, fill: '#000', opacity: 0.4 }, bikeG);
@@ -855,10 +918,10 @@ const { theme = 'paper' } = Astro.props;
 
     const CAMKEYS = [
       { t: 0, pos: [-34, 30, -46] as Vec, tgt: [-6, 6, 74] as Vec },
-      { t: 7, pos: [26, 26, -30] as Vec, tgt: [8, 6, 86] as Vec },
-      { t: 9.2, pos: [40, 20, 6] as Vec, tgt: [16, 6, 92] as Vec },
-      { t: 12.4, pos: [52, 17, 22] as Vec, tgt: [22, 7, 96] as Vec },
-      { t: 14, pos: [60, 22, 14] as Vec, tgt: [20, 12, 92] as Vec },
+      { t: 9.6, pos: [4, 28, -40] as Vec, tgt: [-8, 6, 86] as Vec },
+      { t: 16, pos: [34, 22, -8] as Vec, tgt: [10, 6, 88] as Vec },
+      { t: 18.4, pos: [52, 17, 22] as Vec, tgt: [22, 7, 96] as Vec },
+      { t: 19.5, pos: [60, 22, 14] as Vec, tgt: [20, 12, 92] as Vec },
     ];
     const flightFrac = (t: number) => clamp((t - T_LAUNCH) / (T_TOUCH - T_LAUNCH), 0, 1);
 
@@ -912,8 +975,20 @@ const { theme = 'paper' } = Astro.props;
 
     const terrainVisible = (t: number) => t < T_LAUNCH || t > T_TOUCH;
 
+    /*
+     * Type inside the SVG is measured in viewBox units, so on a narrow screen it
+     * scales down with everything else — at phone width the labels came out
+     * under 3px. These convert a wanted on-screen size into viewBox units, so
+     * the drawing shrinks but the writing stays readable.
+     */
+    const unitsFor = (screenPx: number) => {
+      const px = (svg.clientWidth || 1200) / 1200;
+      return clamp(screenPx / px, 6.4, 26);
+    };
+
     function render(t: number) {
       const c = camAt(t);
+      const labelUnits = unitsFor(11);
       const Vw = view(c.pos, c.tgt);
       const onAzure = t > T_TOUCH;
       const hf = onAzure ? hAzure : hHome;
@@ -977,7 +1052,7 @@ const { theme = 'paper' } = Astro.props;
         v.p.rim!.setAttribute('r', v.R.toFixed(1));
         v.p.rim!.setAttribute('stroke-width', Math.max(v.R * 0.018, 0.7).toFixed(2));
         drawMotif(v.p, v.R);
-        const fs = clamp(v.R * 0.26, 9, 46);
+        const fs = clamp(v.R * 0.26, Math.max(9, labelUnits), 46);
         /* A planet big enough to fill the frame would push its own name off
            screen — keep the label inside the picture. */
         const ly = Math.min(v.R + fs * 1.5, Math.max(250 - v.q[1], -v.q[1] + 250));
@@ -1067,19 +1142,23 @@ const { theme = 'paper' } = Astro.props;
             'transform',
             `translate(${s[0].toFixed(1)} ${s[1].toFixed(1)}) scale(${clamp(s[3] * S_NODE, 0, 2.4).toFixed(3)})`
           );
+          /* the group is scaled by perspective, so undo that for the label */
+          const lu = labelUnits / Math.max(clamp(s[3] * S_NODE, 0.001, 2.4), 0.001);
+          ng.label.setAttribute('font-size', clamp(lu, 5, 30).toFixed(2));
+          ng.label.setAttribute('y', (-(n.h + 6) - lu * 0.8).toFixed(1));
         });
 
         const showBike = !onAzure && t < T_BOARD;
         setShown(bikeG, showBike);
         if (showBike) {
-          const riding = t < T_OFF;
+          const riding = t < T_RIDE;
           const bt = clamp(t / T_RIDE, 0, 1);
-          /* the ride passes the chain in order */
+          /* he tours the chain, then works it: the ride ends at the forest */
           const route = [
-            { x: -50, z: 102 },
-            { x: 8, z: 128 },
-            { x: 62, z: 86 },
-            { x: 20, z: 64 },
+            { x: 20, z: 62 },
+            { x: 62, z: 88 },
+            { x: 10, z: 130 },
+            { x: -50, z: 100 },
           ];
           const seg = clamp(bt * 3, 0, 2.9999);
           const i = Math.floor(seg),
@@ -1112,20 +1191,93 @@ const { theme = 'paper' } = Astro.props;
           }
         }
 
-        if (!onAzure && t >= T_OFF && t < T_BOARD + 0.5) {
-          const k = clamp((t - T_OFF) / (T_BOARD - T_OFF), 0, 1);
-          const wx = lerp(24, 44, ease(k)),
-            wz = lerp(64, 70, ease(k));
+        /*
+         * The build. A tree comes down, the logs go to the mill by barrow, the
+         * planks come back, and the hut goes up in three stages. Nothing here
+         * animates a small gesture — at this size an axe swing would read as
+         * jitter — so the beats are all whole objects appearing, moving or
+         * falling over.
+         */
+        if (!onAzure) {
+          FOREST.falling!.setAttribute(
+            'transform',
+            `rotate(${(smooth(T_FELL, T_FELL + 1.2, t) * 82).toFixed(1)} 15 0)`
+          );
+          FOREST.logs!.setAttribute(
+            'opacity',
+            (smooth(T_FELL + 1, T_FELL + 1.6, t) * (1 - smooth(T_LOADED - 0.5, T_LOADED, t))).toFixed(2)
+          );
+          MILL.planks!.setAttribute(
+            'opacity',
+            (smooth(T_MILLED - 0.7, T_MILLED, t) * (1 - smooth(T_MILLED + 0.5, T_MILLED + 1, t))).toFixed(2)
+          );
+          HUT.walls!.setAttribute('opacity', smooth(T_ATSITE, T_ATSITE + 0.9, t).toFixed(2));
+          HUT.roof!.setAttribute('opacity', smooth(T_ATSITE + 0.9, T_ATSITE + 1.7, t).toFixed(2));
+          HUT.trim!.setAttribute('opacity', smooth(T_ATSITE + 1.7, T_BUILT, t).toFixed(2));
+          /* the hut is only "what I could build" once it is built, and nothing
+             casts a shadow before it exists */
+          HUT_LABEL.setAttribute('opacity', smooth(T_ATSITE + 1.4, T_BUILT, t).toFixed(2));
+          HUT_NODE.shadow.setAttribute(
+            'opacity',
+            (HUT_NODE.shadowOp * smooth(T_ATSITE, T_ATSITE + 0.9, t)).toFixed(3)
+          );
+        }
+
+        /* where the worker is, minute by minute */
+        const LEGS = [
+          { t: T_RIDE, x: -50, z: 100 },
+          { t: T_LOADED, x: -56, z: 96 },
+          { t: T_ATMILL, x: 4, z: 128 },
+          { t: T_MILLED, x: 4, z: 128 },
+          { t: T_ATSITE, x: 4, z: 64 },
+          { t: T_BUILT, x: 12, z: 62 },
+        ];
+        const working = !onAzure && t >= T_RIDE && t < T_OFF;
+        const walking = !onAzure && t >= T_OFF && t < T_BOARD + 0.5;
+        if (working || walking) {
+          let wx: number, wz: number, moving: boolean;
+          if (working) {
+            let a = LEGS[0],
+              b = LEGS[LEGS.length - 1];
+            for (let i = 0; i < LEGS.length - 1; i++)
+              if (t <= LEGS[i + 1].t) {
+                a = LEGS[i];
+                b = LEGS[i + 1];
+                break;
+              }
+            const k = a === b ? 1 : ease(clamp((t - a.t) / (b.t - a.t), 0, 1));
+            wx = lerp(a.x, b.x, k);
+            wz = lerp(a.z, b.z, k);
+            moving = Math.hypot(b.x - a.x, b.z - a.z) > 2;
+          } else {
+            const k = ease(clamp((t - T_OFF) / (T_BOARD - T_OFF), 0, 1));
+            wx = lerp(12, 44, k);
+            wz = lerp(62, 70, k);
+            moving = k < 0.96;
+          }
           const s = proj(Vw, [wx, hf(wx, wz), wz]);
           if (s) {
+            const sc = s[3] * S_WALK;
             walkerHome.g.setAttribute('opacity', (1 - smooth(T_BOARD - 0.4, T_BOARD + 0.3, t)).toFixed(2));
-            walkerHome.g.setAttribute(
-              'transform',
-              `translate(${s[0].toFixed(1)} ${s[1].toFixed(1)}) scale(${(s[3] * S_WALK).toFixed(3)})`
-            );
-            poseWalker(walkerHome, t * 9, k < 0.96);
+            walkerHome.g.setAttribute('transform', `translate(${s[0].toFixed(1)} ${s[1].toFixed(1)}) scale(${sc.toFixed(3)})`);
+            poseWalker(walkerHome, t * 9, moving);
+            /* the barrow rides just ahead of him, and only while there is a load
+               to move — he walks to the ship empty-handed */
+            const hauling = working && t > T_LOADED - 0.6 && t < T_ATSITE + 0.4;
+            barrowG.setAttribute('opacity', hauling ? '1' : '0');
+            if (hauling) {
+              barrowG.setAttribute(
+                'transform',
+                `translate(${(s[0] + sc * 13).toFixed(1)} ${s[1].toFixed(1)}) scale(${sc.toFixed(3)})`
+              );
+              barrowLogs.setAttribute('opacity', t < T_ATMILL + 0.3 ? '1' : '0');
+              barrowPlanks.setAttribute('opacity', t >= T_MILLED ? '1' : '0');
+            }
           }
-        } else walkerHome.g.setAttribute('opacity', '0');
+        } else {
+          walkerHome.g.setAttribute('opacity', '0');
+          barrowG.setAttribute('opacity', '0');
+        }
 
         const shipShown = (!onAzure && t > T_OFF - 0.6 && t < T_LAUNCH) || onAzure;
         shipG.setAttribute(
