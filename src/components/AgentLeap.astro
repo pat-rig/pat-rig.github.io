@@ -302,25 +302,28 @@ const { theme = 'paper' } = Astro.props;
    * film to 47.5s. Everything after launch keeps its original 22.6s of flight
    * and 5.4s of landing.
    */
-  const T_RIDE = 4.5,
-    T_FELL = 5.8,
+  const T_RIDE = 4,
+    T_FELL = 5.2,
     /* the barrow is fetched after the tree is down, not while it is falling */
-    T_BARROW = 7.8,
-    T_LOADED = 8.6,
-    T_ATMILL = 11,
-    T_MILLED = 12.6,
-    T_ATSITE = 14.8,
-    T_BUILT = 17,
+    T_BARROW = 7,
+    T_LOADED = 7.8,
+    T_ATMILL = 9.8,
+    T_MILLED = 11.2,
+    /* planks alone do not make a house: hinges, nails, tools come off the bench */
+    T_ATBENCH = 13.2,
+    T_FITTED = 14.6,
+    T_ATSITE = 16.6,
+    T_BUILT = 18.6,
     /* then the finished hut simply sits there, long enough to register */
-    T_OFF = 19.6,
-    T_BOARD = 21.8,
-    T_LAUNCH = 22.9,
-    T_COCK = 40.9,
-    T_TOUCH = 45.5,
-    T_TEAM = 46.4,
-    T_FENCE = 46.8,
-    T_RISE = 47.8,
-    DUR = 54.5;
+    T_OFF = 21,
+    T_BOARD = 23,
+    T_LAUNCH = 24,
+    T_COCK = 42,
+    T_TOUCH = 46.6,
+    T_TEAM = 47.5,
+    T_FENCE = 47.9,
+    T_RISE = 48.9,
+    DUR = 55.6;
   /* The frame drawn when motion is reduced: the ship abeam of a planet. */
   const STILL_T = 22.6;
 
@@ -416,17 +419,18 @@ const { theme = 'paper' } = Astro.props;
   ];
   const CHAPTERS = [
     { t: 0, title: 'Before agents', text: 'A few hills, reachable at pedalling speed.' },
-    { t: 5.8, title: 'Raw material', text: 'Everything starts as something you have to go and fell.' },
-    { t: 11, title: 'Through the mill', text: 'The same cut, applied to everything you feed it.' },
-    { t: 14.8, title: 'Building', text: 'Then you put it up yourself, one piece at a time.' },
-    { t: 17.2, title: 'A day’s work', text: 'One person, one thing at a time, and this is where it ends.' },
-    { t: 19.8, title: 'AI AGENT', text: 'It was parked there the whole time.' },
-    { t: 23.1, title: 'With agents', text: 'Same human. The range is what changed.' },
-    { t: 26.4, title: 'Passing through', text: 'Each of these was out of reach on a bicycle.' },
-    { t: 41.1, title: 'Approach', text: 'Fuel costs money. You pick the trips worth taking.' },
-    { t: 46.1, title: 'You are not the one building', text: 'They fan out. He stands still.' },
+    { t: 5.2, title: 'Raw material', text: 'Everything starts as something you have to go and fell.' },
+    { t: 9.8, title: 'Through the mill', text: 'The same cut, applied to everything you feed it.' },
+    { t: 13.2, title: 'Fittings', text: 'And the parts that never came out of a log.' },
+    { t: 16.6, title: 'Building', text: 'Then you put it up yourself, one piece at a time.' },
+    { t: 18.8, title: 'A day’s work', text: 'One person, one thing at a time, and this is where it ends.' },
+    { t: 21.2, title: 'AI AGENT', text: 'It was parked there the whole time.' },
+    { t: 24.2, title: 'With agents', text: 'Same human. The range is what changed.' },
+    { t: 27.5, title: 'Passing through', text: 'Each of these was out of reach on a bicycle.' },
+    { t: 42.2, title: 'Approach', text: 'Fuel costs money. You pick the trips worth taking.' },
+    { t: 47.2, title: 'You are not the one building', text: 'They fan out. He stands still.' },
     {
-      t: 51.9,
+      t: 53,
       title: 'The same craft',
       text: 'In parallel, behind a fence, on a hoist that never stops.',
     },
@@ -660,7 +664,19 @@ const { theme = 'paper' } = Astro.props;
     /* Handles for the parts that move: a tree that comes down, the piles that
        appear and go, and the hut that goes up in stages. */
     type Handles = Partial<
-      Record<'falling' | 'logs' | 'planks' | 'walls' | 'roof' | 'trim' | 'body' | 'fence' | 'hoist', Element>
+      Record<
+        | 'falling'
+        | 'logs'
+        | 'planks'
+        | 'parts'
+        | 'walls'
+        | 'roof'
+        | 'trim'
+        | 'body'
+        | 'fence'
+        | 'hoist',
+        Element
+      >
     >;
 
     function tree(g: Element, x: number, h: number, tag: boolean) {
@@ -724,6 +740,11 @@ const { theme = 'paper' } = Astro.props;
         el('rect', { x: -9, y: -16, width: 7, height: 4, ...solid }, g);
         el('rect', { x: 2, y: -15, width: 5, height: 3, ...solid }, g);
         el('path', { d: 'M -17 -20 L 0 -27 L 17 -20', ...line }, g);
+        /* fittings, laid out ready to be carried off */
+        h.parts = el('g', { opacity: 0 }, g);
+        for (const px of [-8, -1, 6])
+          el('rect', { x: px, y: -18.4, width: 4.4, height: 3.4, ...solid }, h.parts);
+        el('path', { d: 'M 12 -15 L 12 -19 M 10 -19 L 14 -19', ...line }, h.parts);
       } else if (kind === 'hut') {
         /* three stages, so the hut is watched going up rather than just being there */
         h.walls = el('g', { opacity: 0 }, g);
@@ -782,6 +803,7 @@ const { theme = 'paper' } = Astro.props;
     const HUT_NODE = NODEG[3];
     const FOREST = NODEG[0].h,
       MILL = NODEG[1].h,
+      BENCH = NODEG[2].h,
       HUT = NODEG[3].h,
       HUT_LABEL = NODEG[3].label;
     /* the four towers, then the site furniture */
@@ -798,6 +820,9 @@ const { theme = 'paper' } = Astro.props;
     const barrowPlanks = el('g', { opacity: 0 }, barrowG);
     for (let k = 0; k < 2; k++)
       el('rect', { x: -8, y: -13.4 - k * 2.6, width: 16, height: 2.2, ...solid }, barrowPlanks);
+    const barrowParts = el('g', { opacity: 0 }, barrowG);
+    for (const px of [-6, -1, 4]) el('rect', { x: px, y: -14, width: 4, height: 3.2, ...solid }, barrowParts);
+    el('path', { d: 'M 8 -11 L 8 -16 M 6 -16 L 10 -16', ...line }, barrowParts);
 
     const bikeG = el('g', {}, gProps);
     const bikeShadow = el('ellipse', { cx: 0, cy: 0, rx: 11, ry: 3.4, fill: '#000', opacity: 0.4 }, bikeG);
@@ -958,12 +983,13 @@ const { theme = 'paper' } = Astro.props;
 
     const CAMKEYS = [
       { t: 0, pos: [-34, 30, -46] as Vec, tgt: [-6, 6, 74] as Vec },
-      { t: 11, pos: [4, 28, -40] as Vec, tgt: [-8, 6, 86] as Vec },
+      { t: 9.8, pos: [4, 28, -40] as Vec, tgt: [-8, 6, 86] as Vec },
+      { t: 13.2, pos: [22, 26, -30] as Vec, tgt: [12, 6, 86] as Vec },
       /* settles on the finished hut and holds there */
-      { t: 17, pos: [26, 21, -12] as Vec, tgt: [6, 6, 74] as Vec },
-      { t: 19.6, pos: [30, 20, -6] as Vec, tgt: [8, 6, 76] as Vec },
-      { t: 21.8, pos: [52, 17, 22] as Vec, tgt: [22, 7, 96] as Vec },
-      { t: 22.9, pos: [60, 22, 14] as Vec, tgt: [20, 12, 92] as Vec },
+      { t: 18.6, pos: [26, 21, -12] as Vec, tgt: [6, 6, 74] as Vec },
+      { t: 21, pos: [30, 20, -6] as Vec, tgt: [8, 6, 76] as Vec },
+      { t: 23, pos: [52, 17, 22] as Vec, tgt: [22, 7, 96] as Vec },
+      { t: 24, pos: [60, 22, 14] as Vec, tgt: [20, 12, 92] as Vec },
     ];
     const flightFrac = (t: number) => clamp((t - T_LAUNCH) / (T_TOUCH - T_LAUNCH), 0, 1);
 
@@ -1258,7 +1284,7 @@ const { theme = 'paper' } = Astro.props;
           );
           MILL.planks!.setAttribute(
             'opacity',
-            (smooth(T_MILLED - 0.7, T_MILLED, t) * (1 - smooth(T_MILLED + 0.5, T_MILLED + 1, t))).toFixed(2)
+            (smooth(T_MILLED - 0.7, T_MILLED, t) * (1 - smooth(T_MILLED + 0.4, T_MILLED + 0.9, t))).toFixed(2)
           );
           HUT.walls!.setAttribute('opacity', smooth(T_ATSITE, T_ATSITE + 0.9, t).toFixed(2));
           HUT.roof!.setAttribute('opacity', smooth(T_ATSITE + 0.9, T_ATSITE + 1.7, t).toFixed(2));
@@ -1272,56 +1298,81 @@ const { theme = 'paper' } = Astro.props;
           );
         }
 
-        /* where the worker is, minute by minute */
+        /* fittings sit on the bench until he collects them */
+        if (!onAzure)
+          BENCH.parts!.setAttribute(
+            'opacity',
+            (smooth(T_ATBENCH, T_ATBENCH + 0.6, t) * (1 - smooth(T_FITTED - 0.5, T_FITTED, t))).toFixed(2)
+          );
+
+        /*
+         * Where the worker is, minute by minute. Forest, mill, bench, site — the
+         * bench stop is why the hut has hinges and not only planks.
+         */
         const LEGS = [
           { t: T_RIDE, x: -50, z: 100 },
           { t: T_BARROW, x: -56, z: 96 },
           { t: T_LOADED, x: -56, z: 96 },
           { t: T_ATMILL, x: 4, z: 128 },
           { t: T_MILLED, x: 4, z: 128 },
+          { t: T_ATBENCH, x: 54, z: 100 },
+          { t: T_FITTED, x: 54, z: 100 },
           { t: T_ATSITE, x: 4, z: 64 },
           { t: T_BUILT, x: 12, z: 62 },
         ];
         const working = !onAzure && t >= T_RIDE && t < T_OFF;
         const walking = !onAzure && t >= T_OFF && t < T_BOARD + 0.5;
-        if (working || walking) {
-          let wx: number, wz: number, moving: boolean;
-          if (working) {
-            let a = LEGS[0],
-              b = LEGS[LEGS.length - 1];
-            for (let i = 0; i < LEGS.length - 1; i++)
-              if (t <= LEGS[i + 1].t) {
-                a = LEGS[i];
-                b = LEGS[i + 1];
-                break;
-              }
-            const k = a === b ? 1 : ease(clamp((t - a.t) / (b.t - a.t), 0, 1));
-            wx = lerp(a.x, b.x, k);
-            wz = lerp(a.z, b.z, k);
-            moving = Math.hypot(b.x - a.x, b.z - a.z) > 2;
-          } else {
-            const k = ease(clamp((t - T_OFF) / (T_BOARD - T_OFF), 0, 1));
-            wx = lerp(12, 44, k);
-            wz = lerp(62, 70, k);
-            moving = k < 0.96;
+        /* one place that answers "where is he at time tt", so the same function
+           can be asked about a moment slightly ahead to get his heading */
+        const wposAt = (tt: number) => {
+          if (tt >= T_OFF) {
+            const k = ease(clamp((tt - T_OFF) / (T_BOARD - T_OFF), 0, 1));
+            return { x: lerp(12, 44, k), z: lerp(62, 70, k), moving: k < 0.96 };
           }
-          const s = proj(Vw, [wx, hf(wx, wz), wz]);
+          let a = LEGS[0],
+            b = LEGS[LEGS.length - 1];
+          for (let i = 0; i < LEGS.length - 1; i++)
+            if (tt <= LEGS[i + 1].t) {
+              a = LEGS[i];
+              b = LEGS[i + 1];
+              break;
+            }
+          const k = a === b ? 1 : ease(clamp((tt - a.t) / (b.t - a.t), 0, 1));
+          return {
+            x: lerp(a.x, b.x, k),
+            z: lerp(a.z, b.z, k),
+            moving: Math.hypot(b.x - a.x, b.z - a.z) > 2,
+          };
+        };
+        if (working || walking) {
+          const w = wposAt(t);
+          const s = proj(Vw, [w.x, hf(w.x, w.z), w.z]);
           if (s) {
             const sc = s[3] * S_WALK;
+            /*
+             * Which way he is facing, in screen space rather than world space —
+             * the camera looks roughly down +z, so world x runs right-to-left on
+             * screen and using it directly had him wheeling the barrow backwards
+             * on every leg.
+             */
+            const wn = wposAt(t + 0.25);
+            const sn = proj(Vw, [wn.x, hf(wn.x, wn.z), wn.z]);
+            const dir = sn && Math.abs(sn[0] - s[0]) > 0.4 ? (sn[0] > s[0] ? 1 : -1) : 1;
+
             walkerHome.g.setAttribute('opacity', (1 - smooth(T_BOARD - 0.4, T_BOARD + 0.3, t)).toFixed(2));
             walkerHome.g.setAttribute('transform', `translate(${s[0].toFixed(1)} ${s[1].toFixed(1)}) scale(${sc.toFixed(3)})`);
-            poseWalker(walkerHome, t * 9, moving);
-            /* the barrow rides just ahead of him, and only while there is a load
-               to move — he walks to the ship empty-handed */
+            poseWalker(walkerHome, t * 9, w.moving);
+            /* the barrow rides ahead of him, on whichever side he is heading */
             const hauling = working && t > T_BARROW && t < T_ATSITE + 0.4;
             barrowG.setAttribute('opacity', hauling ? '1' : '0');
             if (hauling) {
               barrowG.setAttribute(
                 'transform',
-                `translate(${(s[0] + sc * 13).toFixed(1)} ${s[1].toFixed(1)}) scale(${sc.toFixed(3)})`
+                `translate(${(s[0] + sc * 13 * dir).toFixed(1)} ${s[1].toFixed(1)}) scale(${(sc * dir).toFixed(3)} ${sc.toFixed(3)})`
               );
               barrowLogs.setAttribute('opacity', t < T_ATMILL + 0.3 ? '1' : '0');
-              barrowPlanks.setAttribute('opacity', t >= T_MILLED ? '1' : '0');
+              barrowPlanks.setAttribute('opacity', t >= T_MILLED && t < T_ATBENCH + 0.3 ? '1' : '0');
+              barrowParts.setAttribute('opacity', t >= T_FITTED ? '1' : '0');
             }
           }
         } else {
