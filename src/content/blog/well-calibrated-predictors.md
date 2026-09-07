@@ -2,8 +2,9 @@
 title: An argument for well-calibrated predictors in high-risk applications
 date: 2026-09-05
 summary: >-
-  A model that says 70% should be right 70% of the time. Why that property is
-  worth more than it looks, and what it made possible in our MIDL 2024 paper.
+  A model that says 70% should be right 70% of the time. That property lets you
+  estimate how well a model is doing without ever seeing a label — and that is
+  what our MIDL 2024 paper is built on.
 tags: [calibration, segmentation, publication]
 track: data-science
 mark: distribution
@@ -21,22 +22,27 @@ paper:
   talk: https://youtu.be/27FOGfwgCL8?t=1707
 ---
 
-The predictive capacity of classification and regression algorithms is usually
-discussed from a performance point of view. The notion of calibration — which
-measures the quality of a model's uncertainty estimates — is often overlooked.
-In high-risk applications, good calibration can be the key to many safety
-mechanisms. We developed one such mechanism, to show what well-calibrated
-uncertainty estimates can do in practice.
+Classification and regression models are often judged on performance.
+Calibration — whether the confidence a model reports is worth anything — tends
+not to be part of that judgement, in large part because accuracy is indifferent
+to it. A model can sit at the top of a leaderboard while the numbers it attaches
+to its predictions mean rather less than they appear to.
 
-The corresponding publication is referenced below.
-In this article, we are not going to recap the paper in detail but we take a brief look at the
-bigger picture why calibration matters.
+Performance metrics are aggregates — accuracy over a test set, a mean Dice score
+across a cohort. In a high-risk setting the decision is not made over a test
+set. Someone acts on the one image in front of them, and about that image an
+aggregate has nothing to say. What the model does offer at that level is a
+confidence score, and calibration is the quality of that score.
 
+So the argument here is that calibration deserves more attention than it gets,
+and that in medical imaging it buys something concrete rather than tidier
+probabilities. What follows is not a recap of our MIDL 2024 paper but the view
+from further out. We recap briefly what calibration means, point to a very important
+implication of well calibrated models, and discuss the range of applications that opens
+up from there. [Our paper](https://proceedings.mlr.press/v250/kohler24a.html) is
+one of those applications.
 
 ## What calibration is
-
-The key principle behind calibration is that we can infer performance estimates without ever accessing the 
-ground truth data! Let's not skip ahead and recap the definition of calibration briefly.
 
 A classifier usually does not just tell you *which* class it picked. It hands
 you a number alongside it — 0.7, 0.99, 0.51. Calibration is the question of
@@ -56,14 +62,6 @@ directions:
 - A model can be **inaccurate but perfectly calibrated**. On a genuinely hard
   problem, a model that reports 0.55 and is right 55% of the time is telling you
   the exact truth about how hard the problem is.
-
-The usual way to look at this is a reliability diagram: bin the predictions by
-the confidence they were given, then plot the confidence of each bin against how
-often that bin was actually correct. Perfect calibration is the diagonal.
-Everything below it is overconfidence, everything above it is underconfidence.
-
-Modern deep networks sit below the line. They are, as a rule, overconfident —
-and more so as they get larger and are trained longer.
 
 <details class="formal">
 <summary>Formal perspective</summary>
@@ -141,73 +139,145 @@ about — which, in a high-risk setting, it is.
 
 </details>
 
-## Why it matters
+## Why calibration is useful
 
-Because an uncalibrated probability is not a probability. It is a ranking score
-wearing a probability's clothes.
+Here is the step that turns calibration from a tidiness property into a tool.
 
-That distinction is invisible for as long as you only ever use the model's
-*argmax* — which class won. Ranking is preserved under any monotone distortion
-of the scores, so a badly calibrated model can top every accuracy leaderboard
-and nothing about the miscalibration will show up in the metric.
+If a model's confidences are real probabilities, you can estimate how well it is
+performing **without ever looking at a ground-truth label**.
 
-It stops being invisible the moment anything downstream reads the number itself
-rather than the ordering. And in practice, something almost always does:
+That is a strong property and worth pausing on. Every ordinary way of measuring
+a model needs the labels, which is why performance is established once on a test
+set and then assumed to hold. Estimating it from the confidences alone means it
+can be checked on the data the model is actually running on.
 
-- **A threshold.** "Flag anything above 0.9 for review" is a statement about
-  probability. If 0.9 actually means 0.6, you have quietly set a completely
-  different operating point than the one you wrote down.
-- **A human in the loop.** Any workflow where the model handles the confident
-  cases and escalates the uncertain ones depends entirely on the confidence
-  being real.
-- **Combination with other evidence.** Merging a model's output with a prior,
-  another model, or a second measurement is arithmetic on probabilities. Feed it
-  numbers that are not probabilities and the result is not meaningful.
+The argument is one line long. Take a batch of predictions and average the
+confidence the model assigned to each one. Under calibration that confidence
+*is* the probability the prediction is correct, so the average is the expected
+accuracy:
 
-Accuracy tells you how often the model is right in aggregate. Calibration is
-what lets you say something about the *single case in front of you* — and single
-cases are what decisions are made on.
+$$
+\mathbb{E}\bigl[\mathrm{acc}\bigr] \;=\; \frac{1}{N}\sum_{i=1}^{N} \hat p_i .
+$$
 
-## What well-calibrated models let you do
+There is no $Y$ on the right-hand side. Nothing was annotated to compute it.
 
-Once the number can be taken at face value, a set of things become available
-that are simply not available otherwise.
+And there is no machinery behind it either. This is not a theorem that has to be
+proved, or an approximation that holds under conditions — it is the definition of
+calibration, averaged. Definition 1 says the confidence attached to a prediction
+*is* the probability that the prediction is correct. Take the mean of both sides
+across a batch of predictions and the line above is what you have.
 
-**Selective prediction.** The model answers where it is confident and abstains
-where it is not, handing those cases to a human. The whole approach rests on
-confidence being trustworthy: an overconfident model abstains too rarely, and
-abstains on the wrong cases.
+It does not stop at accuracy either. Split the predictions by which side of the
+decision threshold they fell on, and the same move gives every cell of the
+confusion matrix in expectation — true and false positives, true and false
+negatives, all of them out of the confidences alone. Anything assembled from
+those four numbers comes with it: precision, recall, specificity, $F_1$, and —
+for segmentation — the Dice score.
 
-**Operating points you can actually choose.** Picking a threshold to hit a
-target error rate is only possible if predicted probabilities correspond to real
-frequencies. Otherwise the threshold has to be tuned empirically and re-tuned
-whenever anything shifts.
+<details class="formal">
+<summary>Formal perspective</summary>
 
-**Uncertainty you can show.** In segmentation, a calibrated per-pixel confidence
-becomes something a person can look at — a map of where the model is unsure,
-typically the boundaries and the ambiguous structures. That is a genuinely
-useful artefact, and it is only as honest as the calibration underneath it.
+Take the binary case, with $p_i = \mathbb{P}(Y_i = 1 \mid X_i)$ as reported by
+the model and $\hat y_i \in \{0, 1\}$ the label it assigns after thresholding.
+Under perfect calibration, $p_i$ is the probability that case $i$ is genuinely
+positive, so each prediction contributes its own probability mass to two cells
+at once:
 
-## The paper
+$$
+\mathbb{E}[\mathrm{TP}] = \sum_{i \,:\, \hat y_i = 1} p_i,
+\qquad
+\mathbb{E}[\mathrm{FP}] = \sum_{i \,:\, \hat y_i = 1} (1 - p_i),
+$$
 
-A segmentation model that goes into clinical use has to meet a quality standard
-on *each* image, not on average. A model can look strong in aggregate and still
-fail badly on one particular image — and the average is no comfort at all to
-whoever happens to be holding that image.
+$$
+\mathbb{E}[\mathrm{FN}] = \sum_{i \,:\, \hat y_i = 0} p_i,
+\qquad
+\mathbb{E}[\mathrm{TN}] = \sum_{i \,:\, \hat y_i = 0} (1 - p_i).
+$$
 
+Every sum runs over model outputs only. Substituting these into the definition
+of any rate built on the confusion matrix gives an estimate of that rate on
+unlabelled data — for instance
+
+$$
+\mathbb{E}[\mathrm{DSC}] \;\approx\;
+\frac{2\,\mathbb{E}[\mathrm{TP}]}{2\,\mathbb{E}[\mathrm{TP}] + \mathbb{E}[\mathrm{FP}] + \mathbb{E}[\mathrm{FN}]}.
+$$
+
+This is a ratio of expectations rather than the expectation of a ratio, so it is
+not unbiased even under perfect calibration. In practice, though, the binding
+constraint is the calibration itself: the estimate is only ever as good as the
+probabilities going into it, which is why a model is normally temperature-scaled
+before anyone applies it.
+
+</details>
+
+That is what makes it a control rather than a diagnostic. Errors are rarely
+symmetric — a missed lesion on a screening image is not the same kind of mistake
+as a false alarm — and if you can estimate each cell separately, you can pick
+the threshold that holds the one you care about at the level you chose. Control
+the type I error, or the false-negative rate, or the Dice score, and do it on
+the unlabelled data actually in front of you rather than on the test set where
+the labels happened to live.
+
+## Downstream applications
+
+An unlabelled performance estimate is a small equation with a large amount
+downstream of it.
+
+It gives you **selective prediction**: the model answers where it is confident
+and hands over the rest, with the abstention rate set to a performance target
+instead of a guess. It gives you **operating points you can choose in advance**,
+rather than tuning a threshold empirically and re-tuning it whenever anything
+shifts. And it gives you **quality control on data you have no labels for** —
+which is all data that matters, because the point of deployment is that the
+annotation has stopped.
+
+[Our MIDL 2024 paper](https://proceedings.mlr.press/v250/kohler24a.html) is one
+instance of that last one.
+
+A segmentation model in clinical use has to meet a quality standard on *each*
+image, not on average. A model can look strong in aggregate and still fail badly
+on one particular image, and the average is no comfort to whoever is holding it.
 We built a combined quality-control and error-correction framework around that
-problem. Uncertainty maps from an ensemble of segmentation models decide which
-local patches of an image are worth a human's attention. The framework then
-recommends how many patches to send for manual review, and estimates in advance
-what that review will do to the Dice score of the corrected segmentation.
+problem: uncertainty maps from an ensemble decide which local patches of an
+image are worth a human's attention, the framework recommends how many patches
+to send for manual review, and it estimates in advance what that review will do
+to the Dice score of the corrected segmentation.
 
-That estimate is the part that turns a suggestion into a control. Because the
+![One test image in three panels: the retinal photograph, the manual ground-truth vessel tracing, and the model's prediction. The prediction follows the main vessel tree closely but drops a branch on the right-hand side that the ground truth has, and thins out along several of the finer vessels.](./figures/calibration/fundus-prediction.png)
+
+*A fundus image, the manual ground truth, and the model's prediction. The Dice score is the disagreement between the last two. The white and red boxes are the first two patches the framework selected for review; the magenta one is ours, marking a branch the ground truth has and the model reduces to a faint trace — the kind of local failure a per-image quality standard has to catch, and one an aggregate score would bury.*
+
+That last estimate is the whole point, and it is the equation above doing the
+work — the label-free DSC estimator of Li et al. (2022), which we extended to
+predict the score *after* a given set of patches has been corrected. That
+extension is what turns a quality score into a review budget: because the
 predicted improvement can be trusted, segmentation quality can be traded against
-review time deliberately: review as little as necessary to clear the standard,
-rather than reviewing everything or guessing. We evaluated it on retinal vessel
-segmentation in fundus images, where the Dice score rose substantially after
-reviewing only a handful of patches.
+review time deliberately, reviewing as little as necessary to clear the standard
+rather than reviewing everything or guessing. On retinal vessel segmentation in
+fundus images, our adaptive strategy reached a quality target of nearly 0.90
+Dice at 3.2 reviewed patches per image — about a third of what a fixed review
+budget needed for the same standard.
 
-The setting is specific. The requirement behind it is not — all it takes is a
-model that emits uncertainty estimates good enough that something downstream can
-act on them.
+All of which rests on the calibration actually holding. A segmentation network's
+output probabilities are not calibrated out of the box, so they have to be
+temperature-scaled first, and skipping that step does not degrade the estimate
+gracefully. It breaks it in one direction.
+
+<div class="figure-float">
+
+![Estimated against true Dice for the 200 test images. The calibrated estimates scatter tightly around the diagonal. The uncalibrated ones collapse into a vertical band near 0.96 whatever the true score behind them, so every bad segmentation is reported as a good one.](./figures/calibration/dsc-estimate-scatter.png)
+
+*Estimated against true Dice, 200 test images. Same model, same estimator — the only difference is whether the probabilities were temperature-scaled first.*
+
+</div>
+
+The crosses nearly all claim an estimated Dice above 0.95, while the true scores
+behind them run from 0.80 to 0.95. An uncalibrated model does not merely give
+you a noisier estimate of its own quality; it tells you everything is fine.
+Calibrated, the same estimator lands on the diagonal at a mean absolute error of
+0.02 — small enough to set a review budget against.
+
+The setting is specific. The property underneath it is not.

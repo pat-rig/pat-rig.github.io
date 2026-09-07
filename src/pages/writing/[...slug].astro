@@ -340,6 +340,14 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
    * which made them larger but left the right edge ragged against the prose.
    * Patrick compared the two side by side and chose this; the column was
    * widened instead, which lifts the text and the figures together.
+   *
+   * The width rule alone assumed a wide figure. The paper plots that started
+   * this are 1.7:1 to 3.6:1, so at the column's 672px they land between 189px
+   * and 386px tall. A single square panel lifted out of a multi-panel figure
+   * is nearer 1:1, and at full column width it ran 637px — most of a screen
+   * for one scatter plot. Hence the height cap: 26rem clears the tallest
+   * existing figure by 30px, so wide plots still fill the column exactly as
+   * before and only the tall ones are pulled in, centred.
    */
 
 
@@ -348,8 +356,18 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
   }
 
   .post__body :global(img) {
-    width: 100%;
+    /*
+     * Both dimensions auto, so the two maxima scale the figure rather than
+     * distort it. Astro emits width/height attributes; leaving width to those
+     * makes it a specified width, and the height cap then squashes the plot
+     * instead of shrinking it.
+     */
+    width: auto;
     height: auto;
+    max-width: 100%;
+    max-height: 26rem;
+    display: block;
+    margin-inline: auto;
     mix-blend-mode: multiply;
   }
 
@@ -360,6 +378,38 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
     line-height: 1.45;
     color: var(--text-2);
     text-wrap: pretty;
+  }
+
+  /*
+   * A figure the prose runs alongside, rather than one the prose stops for.
+   * Wrap the markdown image and its caption in <div class="figure-float"> —
+   * blank lines inside the div keep both going through the markdown pipeline.
+   *
+   * The float is set in the column's own units so the text beside it keeps a
+   * readable measure: at 46% the remaining channel is still ~340px, about 45
+   * characters, which is the narrowest that reads comfortably here. The image
+   * rule above centres figures in the column, so it is overridden — inside a
+   * float the figure fills its box and hangs on the left margin.
+   */
+  .post__body :global(.figure-float) {
+    float: left;
+    width: 46%;
+    margin: var(--space-2) var(--space-5) var(--space-3) 0;
+  }
+
+  .post__body :global(.figure-float p:has(> img)) {
+    margin-top: 0;
+  }
+
+  .post__body :global(.figure-float img) {
+    width: 100%;
+    max-height: none;
+    margin-inline: 0;
+  }
+
+  /* Headings never wrap around a figure. */
+  .post__body :global(h2) {
+    clear: both;
   }
 
   .post__body :global(p:has(> img) + p em) {
@@ -626,6 +676,19 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
   /* Consecutive links group together rather than reading as separate blocks. */
   .citation__link + .citation__link {
     margin-top: var(--space-2);
+  }
+
+  /*
+   * A float needs a column to float in. Below this width there isn't one —
+   * the text beside it would drop under 30 characters — so it becomes an
+   * ordinary full-width figure again.
+   */
+  @media (max-width: 40rem) {
+    .post__body :global(.figure-float) {
+      float: none;
+      width: auto;
+      margin: var(--space-6) 0 0;
+    }
   }
 
   /* Matches the entry mark's narrow-screen column so the two stay in step. */
