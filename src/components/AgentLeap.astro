@@ -373,6 +373,12 @@ const { theme = 'paper' } = Astro.props;
     { x: 6, z: 132, world: 'home', kind: 'mill', h: 27, label: 'preprocessing' },
     { x: 64, z: 92, world: 'home', kind: 'bench', h: 27, label: 'experiments' },
     { x: 6, z: 60, world: 'home', kind: 'hut', h: 27, label: 'what I could build without agents' },
+    /* Also art-less. It names the setting before the story starts — a reader
+       arriving cold sees hills and a bicycle and has no way to know what the
+       landscape stands for. Sits high and central so it clears the props'
+       own labels, and it leaves before the felling does, so the frame is
+       clean by the time anything happens in it. */
+    { x: 4, z: 104, world: 'home', kind: 'title', h: 78, lmul: 1.5, label: 'the world of data science and machine learning' },
     /*
      * Azure rhymes with the hills rather than just outscaling them: the same
      * craft, but several things going up at once while he stands and watches.
@@ -755,7 +761,8 @@ const { theme = 'paper' } = Astro.props;
     /* the four towers, then the site furniture */
     const TOWERS = [4, 5, 6, 7].map((i) => ({ node: NODEG[i], prop: PROPS[i] }));
     const SITE = NODEG[PROPS.findIndex((p) => p.kind === 'site')].h;
-    const TITLE_NODE = NODEG[PROPS.findIndex((p) => p.kind === 'title')];
+    const TITLE_NODE = NODEG[PROPS.findIndex((p) => p.kind === 'title' && p.world === 'azure')];
+    const HOME_TITLE = NODEG[PROPS.findIndex((p) => p.kind === 'title' && p.world === 'home')];
 
     /* the barrow: one wheel, two handles, and whatever it is carrying */
     const barrowG = el('g', { opacity: 0 }, gProps);
@@ -1183,6 +1190,12 @@ const { theme = 'paper' } = Astro.props;
           ng.label.setAttribute('font-size', clamp(lu * lm, 5, 30).toFixed(2));
           ng.label.setAttribute('y', (-(n.h + 6) - lu * lm * 0.8).toFixed(1));
         });
+
+        /* in over the first second, out as the ride ends */
+        HOME_TITLE.label.setAttribute(
+          'opacity',
+          (smooth(0.4, 1.4, t) * (1 - smooth(T_RIDE - 0.4, T_RIDE + 0.8, t))).toFixed(2)
+        );
 
         const showBike = !onAzure && t < T_BOARD;
         setShown(bikeG, showBike);

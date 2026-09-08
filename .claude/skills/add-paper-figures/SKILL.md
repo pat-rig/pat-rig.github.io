@@ -131,3 +131,65 @@ A figure of three panels side by side is around 3.5:1, so it stays short
 however wide the column gets. If one reads too small, the fix is to that
 figure — splitting the panels into separate stacked images — not to the
 layout.
+
+## Prefer the data behind the figure to the figure itself
+
+Before lifting a rendered figure, look for the **notebook that generated it**.
+Papers link one — `§ Code and data availability`, usually a GitHub repo — and
+the plotting notebook is often committed **with its cell outputs intact**. Those
+outputs are the numbers, in text, exact.
+
+This beats reusing the PNG whenever the figure would have to be restyled,
+recomposed, or split, because a redraw from real values is faithful in a way
+that digitising a plot never is.
+
+```bash
+gh api "repos/<org>/<repo>/git/trees/<branch>?recursive=true" \
+  --jq '.tree[] | select(.type=="blob") | .path' | grep -iE '\.(ipynb|csv)$'
+gh api "repos/<org>/<repo>/contents/notebooks/<name>.ipynb" --jq '.content' \
+  | base64 -d > nb.ipynb
+```
+
+Then parse `cells[].outputs[].text` and pair each value with the `main_result(...)`
+call above it. Metrics hide under other names — in the retinal benchmark the
+cross-dataset Dice values were logged as `F1`, which for binary segmentation is
+the same quantity.
+
+**Validate before trusting it.** Find a subset of the extracted numbers that
+also appears in the paper's tables and check every one. Fifteen in-domain values
+parsed out of `cross_dataset.ipynb` matched Table 4 exactly, which is what
+established the notebook as the figure's source rather than a stale re-run.
+
+**Expect this to change the prose.** The cross-dataset numbers existed nowhere
+in that paper except inside the plot, and having them falsified two claims in
+the draft: "every point sits below the diagonal" (one of thirty is above), and
+"models trained on FIVES transfer best" (true of the absolute score, the reverse
+if measured as the smallest gap). Neither was visible from the figure. Budget
+time to re-check the text after extraction, not just the figure.
+
+When the data cannot be recovered, say so in the caption and use the PNG. Do not
+digitise marker positions and present the result as the paper's numbers.
+
+## Redrawing a figure in the site's design
+
+Only once the values are exact. Inline SVG in design tokens, following
+`.reliability` in the calibration post and `.xdomain` in the vessel benchmark:
+`currentColor` or token fills, `var(--font-mono)` for labels, no plate.
+
+- **Run the palette validator** — `dataviz`'s `scripts/validate_palette.js`
+  against `--surface "#f4f1ea"`. The site's own warm palette fails the chroma
+  floor on cream and reads as three greys; Okabe-Ito passes. Keep the source
+  figure's hue families where you can, so a reader who knows it still recognises
+  it — matplotlib's saturated red beside saturated green is a red-green CVD
+  failure and must not be reproduced.
+- **Check the rendered panel size before choosing a layout.** The article column
+  is 672px. Five panels in a row is 134px each and illegible; 2×2 is 336px. Two
+  points 0.53 units apart collide at the first and separate at the second.
+- **Reproduce the structure, restyle the surface** — unless the author says
+  otherwise. The Covid figures keep their triple and dual y-axes, which are an
+  anti-pattern, because they are a record of what the report argued. That call
+  belongs to Patrick, not to the agent: ask, and say in the caption that the
+  scales are as published.
+- Author the SVG from a generator script, not by hand, and keep the script. Every
+  one of these needed three or four passes for label collisions and legend
+  overlap.
