@@ -248,7 +248,7 @@ to the Dice score of the corrected segmentation.
 
 ![One test image in three panels: the retinal photograph, the manual ground-truth vessel tracing, and the model's prediction. The prediction follows the main vessel tree closely but drops a branch on the right-hand side that the ground truth has, and thins out along several of the finer vessels.](./figures/calibration/fundus-prediction.png)
 
-*A fundus image, the manual ground truth, and the model's prediction. The Dice score is the disagreement between the last two. The white and red boxes are the first two patches the framework selected for review; the magenta one is ours, marking a branch the ground truth has and the model reduces to a faint trace — the kind of local failure a per-image quality standard has to catch, and one an aggregate score would bury. Taken from [Köhler et al. (2024)](https://proceedings.mlr.press/v250/kohler24a.html).*
+*A fundus image, the manual ground truth, and the model's prediction. The Dice score is the disagreement between the last two. The white and red boxes are the first two patches the framework selected for review; the magenta one is ours, marking a branch the ground truth has and the model reduces to a faint trace — the kind of local failure a per-image quality standard has to catch, and one an aggregate score would bury. Taken from [Köhler et al. (2024)](https://proceedings.mlr.press/v250/kohler24a.html); the fundus image and its ground truth are from the FIVES dataset, [Jin et al. (2022)](https://doi.org/10.1038/s41597-022-01564-3), CC BY 4.0.*
 
 That last estimate is the whole point, and it is the equation above doing the
 work — the label-free DSC estimator of Li et al. (2022), which we extended to

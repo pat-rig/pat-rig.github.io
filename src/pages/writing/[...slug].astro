@@ -713,6 +713,145 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
   }
 
   /*
+   * Covid report figures, redrawn from the report's own data so they wear the
+   * site's type and palette instead of matplotlib's defaults. The structure is
+   * reproduced exactly as published — including the dual and triple y-axes,
+   * which are Patrick's call: the figures are a record of what the report
+   * argued, not a re-analysis.
+   *
+   * Wave colours keep the original's hue families (blue / red / green /
+   * purple) in validated steps: the published version used saturated red and
+   * green side by side, which is the standard red-green CVD failure.
+   */
+  .post__body :global(.cv__figure) {
+    margin-top: var(--space-6);
+    margin-bottom: var(--space-6);
+  }
+
+  .post__body :global(.cv__figure figcaption) {
+    margin-top: var(--space-3);
+    font-size: var(--step--1);
+    line-height: 1.45;
+    color: var(--text-2);
+    text-wrap: pretty;
+  }
+
+  .post__body :global(.cv-fig) {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .post__body :global(.cv-axis line),
+  .post__body :global(.cv-tick line) {
+    stroke: var(--line-strong);
+    stroke-width: 1;
+  }
+
+  .post__body :global(.cv-mark circle) {
+    stroke: none;
+  }
+
+  .post__body :global(.cv-between circle) {
+    fill: #8a8378;
+    opacity: 0.75;
+  }
+  .post__body :global(.cv-w1 circle) {
+    fill: #0072b2;
+  }
+  .post__body :global(.cv-w2 circle) {
+    fill: #d55e00;
+  }
+  .post__body :global(.cv-w3 circle) {
+    fill: #009e73;
+  }
+  .post__body :global(.cv-w4 circle) {
+    fill: #9b4f96;
+  }
+
+  .post__body :global(.cv-fig text) {
+    font-family: var(--font-mono);
+    fill: var(--text-2);
+    font-size: 11px;
+  }
+
+  .post__body :global(.cv-title) {
+    font-family: var(--font-sans);
+    fill: var(--text-0);
+    font-size: 13px;
+    font-weight: 600;
+    text-anchor: middle;
+  }
+
+  .post__body :global(.cv-ticklabel) {
+    font-size: 10px;
+    text-anchor: middle;
+  }
+
+  .post__body :global(.cv-ticklabel--y) {
+    text-anchor: end;
+  }
+
+  .post__body :global(.cv-legend-title) {
+    fill: var(--text-1);
+    font-size: 10px;
+  }
+
+  .post__body :global(.cv-legend) {
+    font-size: 10px;
+  }
+
+  .post__body :global(.cv-axis-title) {
+    fill: var(--text-1);
+    font-size: 12px;
+    text-anchor: middle;
+  }
+
+  .post__body :global(.cv-ticklabel--r) {
+    text-anchor: start;
+  }
+
+  .post__body :global(.cv-line) {
+    fill: none;
+    stroke-width: 1.6;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  .post__body :global(.cv-inc) {
+    stroke: #0072b2;
+  }
+  .post__body :global(.cv-icu) {
+    stroke: #d55e00;
+  }
+  .post__body :global(.cv-pos) {
+    stroke: #009e73;
+  }
+
+  /* Vaccination milestones: dotted verticals, as in the published figure. */
+  .post__body :global(.cv-milestone) {
+    stroke-width: 1.2;
+    stroke-dasharray: 2 3;
+  }
+  .post__body :global(.cv-ms1) {
+    stroke: #e69f00;
+  }
+  .post__body :global(.cv-ms2) {
+    stroke: #9b4f96;
+  }
+  .post__body :global(.cv-ms3) {
+    stroke: #009e73;
+  }
+
+  .post__body :global(.cv-year) {
+    font-size: 9px;
+  }
+
+  .post__body :global(.cv-small) {
+    font-size: 9px;
+  }
+
+  /*
    * The dataset examples. The labels were baked into the source PNG in its own
    * sans face; lifting them out and setting them here puts them in the site's
    * mono, the same face every other data label on the page wears. The columns
