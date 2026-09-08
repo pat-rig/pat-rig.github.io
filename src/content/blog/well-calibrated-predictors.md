@@ -37,7 +37,7 @@ confidence score, and calibration is the quality of that score.
 So the argument here is that calibration deserves more attention than it gets,
 and that in medical imaging it buys something concrete rather than tidier
 probabilities. What follows is not a recap of our MIDL 2024 paper but the view
-from further out. We recap briefly what calibration means, point to a very important
+from further out. We review briefly what calibration means, point to a very important
 implication of well calibrated models, and discuss the range of applications that opens
 up from there. [Our paper](https://proceedings.mlr.press/v250/kohler24a.html) is
 one of those applications.
@@ -248,7 +248,7 @@ to the Dice score of the corrected segmentation.
 
 ![One test image in three panels: the retinal photograph, the manual ground-truth vessel tracing, and the model's prediction. The prediction follows the main vessel tree closely but drops a branch on the right-hand side that the ground truth has, and thins out along several of the finer vessels.](./figures/calibration/fundus-prediction.png)
 
-*A fundus image, the manual ground truth, and the model's prediction. The Dice score is the disagreement between the last two. The white and red boxes are the first two patches the framework selected for review; the magenta one is ours, marking a branch the ground truth has and the model reduces to a faint trace — the kind of local failure a per-image quality standard has to catch, and one an aggregate score would bury.*
+*A fundus image, the manual ground truth, and the model's prediction. The Dice score is the disagreement between the last two. The white and red boxes are the first two patches the framework selected for review; the magenta one is ours, marking a branch the ground truth has and the model reduces to a faint trace — the kind of local failure a per-image quality standard has to catch, and one an aggregate score would bury. Taken from [Köhler et al. (2024)](https://proceedings.mlr.press/v250/kohler24a.html).*
 
 That last estimate is the whole point, and it is the equation above doing the
 work — the label-free DSC estimator of Li et al. (2022), which we extended to
@@ -270,7 +270,7 @@ gracefully. It breaks it in one direction.
 
 ![Estimated against true Dice for the 200 test images. The calibrated estimates scatter tightly around the diagonal. The uncalibrated ones collapse into a vertical band near 0.96 whatever the true score behind them, so every bad segmentation is reported as a good one.](./figures/calibration/dsc-estimate-scatter.png)
 
-*Estimated against true Dice, 200 test images. Same model, same estimator — the only difference is whether the probabilities were temperature-scaled first.*
+*Estimated against true Dice, 200 test images. Same model, same estimator — the only difference is whether the probabilities were temperature-scaled first. Taken from [Köhler et al. (2024)](https://proceedings.mlr.press/v250/kohler24a.html).*
 
 </div>
 
@@ -281,3 +281,19 @@ Calibrated, the same estimator lands on the diagonal at a mean absolute error of
 0.02 — small enough to set a review budget against.
 
 The setting is specific. The property underneath it is not.
+
+## Dataset
+
+The fundus images and vessel annotations above come from FIVES: 800
+high-resolution images from the Second Affiliated Hospital of Zhejiang
+University, evenly split between healthy eyes and glaucoma, age-related macular
+degeneration and diabetic retinopathy, annotated by junior annotators and
+verified by senior ones. We used the original splits — 600 training images, 120
+of them held out for validation, and the 200 test images the scatter plot above
+is drawn from.
+
+- **FIVES** — Jin, K., Huang, X., Zhou, J., Li, Y., Yan, Y., Sun, Y., Zhang,
+  Q., Wang, Y., Ye, J. (2022). FIVES: A Fundus Image Dataset for Artificial
+  Intelligence based Vessel Segmentation. *Scientific Data* 9, 475.
+  [doi:10.1038/s41597-022-01564-3](https://doi.org/10.1038/s41597-022-01564-3)
+  · [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)

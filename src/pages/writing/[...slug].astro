@@ -603,6 +603,158 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
     text-anchor: end;
   }
 
+  /*
+   * Cross-dataset small multiples. Same principle as .def__figure — drawn on
+   * the page ground, no plate — but it is a reading of a whole result rather
+   * than a diagram beside an argument, so it takes the full article column.
+   *
+   * The three series colours are Okabe-Ito. The site's own warm palette was
+   * tried first and fails the chroma floor on cream: muted slate/sienna/olive
+   * measure below 0.1 chroma and read as three greys. These are the only set
+   * checked that passes lightness, chroma, CVD separation (worst adjacent pair
+   * ΔE 11.0 deutan) and 3:1 contrast against --surface-0. Shape carries the
+   * same distinction, so identity never rests on colour alone.
+   */
+  .post__body :global(.xd__figure) {
+    margin-top: var(--space-6);
+    margin-bottom: var(--space-6);
+  }
+
+  .post__body :global(.xd__figure figcaption) {
+    margin-top: var(--space-3);
+    font-size: var(--step--1);
+    line-height: 1.45;
+    color: var(--text-2);
+    text-wrap: pretty;
+  }
+
+  .post__body :global(.xdomain) {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .post__body :global(.xd-axis line) {
+    stroke: var(--line-strong);
+    stroke-width: 1;
+  }
+
+  .post__body :global(.xd-tick line) {
+    stroke: var(--line-strong);
+    stroke-width: 1;
+  }
+
+  .post__body :global(.xd-diagonal) {
+    stroke: var(--line-strong);
+    stroke-width: 1;
+    stroke-dasharray: 4 4;
+  }
+
+  /* A ring of page ground so overlapping markers stay countable. */
+  .post__body :global(.xd-mark) {
+    stroke: var(--surface-0);
+    stroke-width: 1.5;
+  }
+
+  .post__body :global(.xd-x line) {
+    stroke-width: 2.1;
+    stroke-linecap: round;
+  }
+
+  .post__body :global(.xd-chase) {
+    fill: #0072b2;
+  }
+  .post__body :global(.xd-drive) {
+    fill: none;
+  }
+  .post__body :global(.xd-drive line) {
+    stroke: #d55e00;
+  }
+  .post__body :global(.xd-fives) {
+    fill: #009e73;
+  }
+
+  .post__body :global(.xdomain text) {
+    font-family: var(--font-mono);
+    fill: var(--text-2);
+    font-size: 11px;
+  }
+
+  .post__body :global(.xd-panel-title) {
+    font-family: var(--font-sans);
+    fill: var(--text-0);
+    font-size: 14px;
+    font-weight: 600;
+    text-anchor: middle;
+  }
+
+  .post__body :global(.xd-legend-label) {
+    fill: var(--text-1);
+  }
+
+  .post__body :global(.xd-ticklabel) {
+    font-size: 10px;
+    text-anchor: middle;
+  }
+
+  .post__body :global(.xd-ticklabel--y) {
+    text-anchor: end;
+  }
+
+  .post__body :global(.xd-pointlabel) {
+    font-size: 10px;
+    fill: var(--text-1);
+  }
+
+  .post__body :global(.xd-axis-title) {
+    fill: var(--text-1);
+    font-size: 12px;
+    text-anchor: middle;
+  }
+
+  /*
+   * The dataset examples. The labels were baked into the source PNG in its own
+   * sans face; lifting them out and setting them here puts them in the site's
+   * mono, the same face every other data label on the page wears. The columns
+   * are even in the source image, so a six-track grid lands each label over its
+   * own panel without per-column offsets.
+   */
+  .post__body :global(.fundus__figure) {
+    margin-top: var(--space-6);
+    margin-bottom: var(--space-6);
+  }
+
+  .post__body :global(.fundus__labels) {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0;
+    margin: 0 0 var(--space-2);
+    padding: 0;
+    list-style: none;
+  }
+
+  .post__body :global(.fundus__labels li) {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 1.25;
+    color: var(--text-1);
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  /* The image arrives wrapped in a paragraph by the markdown pipeline. */
+  .post__body :global(.fundus__figure p:has(> img)) {
+    margin: 0;
+  }
+
+  .post__body :global(.fundus__figure img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-inline: 0;
+  }
+
   .post__body :global(.rd-axis-label) {
     fill: var(--text-1);
     text-anchor: middle;
