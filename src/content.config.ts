@@ -86,6 +86,13 @@ const blog = defineCollection({
     status: z.string().optional(),
     /** Optional kind label shown in the entry meta, e.g. "Project", "Publication". */
     kind: z.string().optional(),
+    /**
+     * Keeps an entry out of every listing AND stops its page being built, so
+     * there is no unlisted-but-reachable URL for a search engine to find. For
+     * ideas that are parked rather than in progress: the file stays in the
+     * repo with its notes intact, and unhiding is one line.
+     */
+    hidden: z.boolean().default(false),
   }),
 });
 

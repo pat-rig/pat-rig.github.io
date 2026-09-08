@@ -6,6 +6,7 @@ summary: >-
   particular regions of the input space. Averages hide it.
 tags: [calibration]
 track: data-science
+hidden: true
 mark: distribution
 kind: Note
 status: planned

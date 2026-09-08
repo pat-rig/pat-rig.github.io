@@ -7,6 +7,7 @@ summary: >-
 repo: https://github.com/pat-rig/pat-rig.github.io
 tags: [projects, commute-heatmap]
 track: data-science
+hidden: true
 mark: grid
 kind: Project
 status: collecting data

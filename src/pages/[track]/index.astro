@@ -24,7 +24,7 @@ interface Props {
 const { track } = Astro.props;
 
 const posts = (await getCollection('blog'))
-  .filter((post) => post.data.track === track.id)
+  .filter((post) => post.data.track === track.id && !post.data.hidden)
   .sort(byListingOrder);
 
 const other = TRACKS.find((t) => t.id !== track.id);

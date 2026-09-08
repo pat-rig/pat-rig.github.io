@@ -9,7 +9,7 @@ import { SITE_NAME } from '../site';
 import { TRACKS } from '../tracks';
 import { byListingOrder } from '../ordering';
 
-const posts = (await getCollection('blog')).sort(byListingOrder);
+const posts = (await getCollection('blog')).filter((post) => !post.data.hidden).sort(byListingOrder);
 
 /** Up to three entries per track on the landing page; the rest live on /writing/. */
 const byTrack = TRACKS.map((track) => ({
