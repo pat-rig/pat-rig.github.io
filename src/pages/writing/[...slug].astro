@@ -1043,6 +1043,195 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
     text-align: center;
   }
 
+  /* Microbiome post: two inline plots, generated from
+     drafts/figures/microbiome/gen.py in the private repo. */
+  .post__body :global(.mb__figure) {
+    margin-top: var(--space-6);
+    margin-bottom: var(--space-6);
+  }
+
+  .post__body :global(.mb__figure figcaption) {
+    margin-top: var(--space-3);
+    font-size: var(--step--1);
+    line-height: 1.45;
+    color: var(--text-2);
+    text-wrap: pretty;
+  }
+
+  .post__body :global(.mb-fig) {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .post__body :global(.mb-fig text) {
+    font-family: var(--font-mono);
+    fill: var(--text-2);
+    font-size: 11px;
+    text-anchor: middle;
+  }
+
+  .post__body :global(.mb-fig .mb-title) {
+    font-family: var(--font-sans);
+    fill: var(--text-0);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .post__body :global(.mb-axis line),
+  .post__body :global(.mb-ticks line) {
+    stroke: var(--line-strong);
+    stroke-width: 1;
+  }
+
+  .post__body :global(.mb-fig .mb-tick) {
+    font-size: 10px;
+  }
+
+  .post__body :global(.mb-fig .mb-tick--y) {
+    text-anchor: end;
+  }
+
+  .post__body :global(.mb-fig .mb-axis-title) {
+    fill: var(--text-1);
+    font-size: 11px;
+  }
+
+  .post__body :global(.mb-fig .mb-cat) {
+    fill: var(--text-1);
+    font-size: 11px;
+  }
+
+  .post__body :global(.mb-curve) {
+    fill: none;
+    stroke: var(--text-0);
+    stroke-width: 1.6;
+    stroke-linejoin: round;
+  }
+
+  .post__body :global(.mb-band) {
+    fill: #6a84a0;
+    opacity: 0.12;
+  }
+
+  .post__body :global(.mb-guide) {
+    stroke: var(--line-strong);
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+  }
+
+  .post__body :global(.mb-dot) {
+    fill: var(--text-0);
+  }
+
+  .post__body :global(.mb-fig .mb-note) {
+    fill: var(--text-1);
+    font-size: 11px;
+    text-anchor: start;
+  }
+
+  .post__body :global(.mb-fig .mb-note--band) {
+    text-anchor: end;
+  }
+
+  .post__body :global(.mb-whisker) {
+    stroke: #6a84a0;
+    stroke-width: 1;
+  }
+
+  .post__body :global(.mb-box) {
+    fill: #6a84a0;
+    fill-opacity: 0.22;
+    stroke: #6a84a0;
+    stroke-width: 1.2;
+  }
+
+  .post__body :global(.mb-median) {
+    stroke: var(--text-0);
+    stroke-width: 2;
+  }
+
+  .post__body :global(.mb-flier) {
+    fill: none;
+    stroke: #6a84a0;
+    stroke-width: 1.2;
+  }
+
+  .post__body :global(.mb-arrowhead) {
+    fill: var(--line-strong);
+  }
+
+  /* Manifold sketch in the microbiome post. */
+  .post__body :global(.mf-manifold) {
+    fill: none;
+    stroke: var(--line-strong);
+    stroke-width: 1;
+    stroke-dasharray: 2 4;
+    stroke-linecap: round;
+  }
+
+  .post__body :global(.mf-dots circle),
+  .post__body :global(.mf-dot) {
+    fill: #6a84a0;
+    opacity: 0.6;
+  }
+
+  .post__body :global(.mf-sheet) {
+    fill: #6a84a0;
+    fill-opacity: 0.09;
+    stroke: none;
+  }
+
+  .post__body :global(.mf-edge) {
+    stroke: var(--line-strong);
+    stroke-width: 0.9;
+    opacity: 0.7;
+  }
+
+  .post__body :global(.mf-edge--ruling) {
+    opacity: 0.35;
+  }
+
+  .post__body :global(.mf-geo) {
+    fill: none;
+    stroke: #c68b60;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+  }
+
+  .post__body :global(.mf-geo--long) {
+    stroke-width: 1.3;
+    opacity: 0.55;
+  }
+
+  .post__body :global(.mf-euclid) {
+    stroke: var(--text-0);
+    stroke-width: 1.2;
+    stroke-dasharray: 4 3;
+  }
+
+  .post__body :global(.mf-euclid--faint) {
+    opacity: 0.35;
+  }
+
+  .post__body :global(.mf-point) {
+    fill: var(--surface-0);
+    stroke: var(--text-0);
+    stroke-width: 1.6;
+  }
+
+  .post__body :global(.mf-fig .mf-label) {
+    fill: var(--text-0);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .post__body :global(.mf-fig .mf-legend text) {
+    text-anchor: start;
+    fill: var(--text-1);
+    font-size: 11px;
+  }
+
   /* Latent-space post: three inline diagrams, generated from
      drafts/figures/latent-space/gen.py in the private repo. */
   .post__body :global(.ls__figure) {
