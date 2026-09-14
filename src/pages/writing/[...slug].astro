@@ -994,4 +994,138 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
     margin-top: var(--space-8);
     font-size: var(--step--1);
   }
+
+  /* Latent-space post: three inline diagrams, generated from
+     drafts/figures/latent-space/gen.py in the private repo. */
+  .post__body :global(.ls__figure) {
+    margin-top: var(--space-6);
+    margin-bottom: var(--space-6);
+  }
+
+  .post__body :global(.ls__figure figcaption) {
+    margin-top: var(--space-3);
+    font-size: var(--step--1);
+    line-height: 1.45;
+    color: var(--text-2);
+    text-wrap: pretty;
+  }
+
+  .post__body :global(.ls-fig) {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .post__body :global(.ls-fig text) {
+    font-family: var(--font-mono);
+    fill: var(--text-2);
+    font-size: 11px;
+    text-anchor: middle;
+  }
+
+  .post__body :global(.ls-fig .ls-title) {
+    font-family: var(--font-sans);
+    fill: var(--text-0);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .post__body :global(.ls-axis line),
+  .post__body :global(.ls-ticks line) {
+    stroke: var(--line-strong);
+    stroke-width: 1;
+  }
+
+  .post__body :global(.ls-fig .ls-tick) {
+    font-size: 10px;
+  }
+
+  .post__body :global(.ls-fig .ls-tick--y) {
+    text-anchor: end;
+  }
+
+  /* Same ink-only contours as the entry's `contour` mark, so the figure and
+     the thumbnail read as one thing. */
+  .post__body :global(.ls-contour path) {
+    fill: none;
+    stroke: var(--text-0);
+    stroke-width: 1.1;
+    stroke-linejoin: round;
+  }
+
+  .post__body :global(.ls-edges line) {
+    stroke: var(--line-strong);
+    stroke-width: 0.9;
+  }
+
+  .post__body :global(.ls-arrowhead) {
+    fill: var(--line-strong);
+  }
+
+  .post__body :global(.ls-node) {
+    fill: #6a84a0;
+  }
+
+  .post__body :global(.ls-node--param) {
+    fill: #c68b60;
+  }
+
+  .post__body :global(.ls-fig .ls-var) {
+    fill: var(--text-0);
+    font-size: 18px;
+  }
+
+  .post__body :global(.ls-fig .ls-formula) {
+    fill: var(--text-1);
+    font-size: 14px;
+  }
+
+  .post__body :global(.ls-fig .ls-dots) {
+    fill: var(--text-1);
+    font-size: 16px;
+  }
+
+  .post__body :global(.ls-brace path) {
+    fill: none;
+    stroke: var(--line-strong);
+    stroke-width: 1;
+  }
+
+  .post__body :global(.ls-gnode) {
+    fill: var(--surface-0);
+    stroke: var(--text-0);
+    stroke-width: 1.5;
+  }
+
+  .post__body :global(.ls-gnode--observed) {
+    fill: var(--surface-2);
+  }
+
+  .post__body :global(.ls-fig .ls-glabel) {
+    fill: var(--text-0);
+    font-size: 20px;
+  }
+
+  .post__body :global(.ls-gedge) {
+    fill: none;
+    stroke: var(--text-0);
+    stroke-width: 1.5;
+  }
+
+  .post__body :global(.ls-gedge--adversarial) {
+    stroke-dasharray: 5 4;
+  }
+
+  .post__body :global(.ls-garrowhead) {
+    fill: var(--text-0);
+  }
+
+  .post__body :global(.ls-fig .ls-gcaption) {
+    fill: var(--text-1);
+  }
+
+  .post__body :global(.ls-fig .ls-glegend text) {
+    text-anchor: start;
+    font-size: 10px;
+  }
 </style>
