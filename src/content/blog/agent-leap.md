@@ -7,7 +7,7 @@ summary: >-
 tags: [llms, agents]
 track: business
 mark: fork
-kind: Essay
+kind: Animation
 viz: agent-leap
 ---
 

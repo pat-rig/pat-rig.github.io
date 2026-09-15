@@ -7,7 +7,7 @@ summary: >-
 tags: [llms, principles]
 track: business
 mark: fork
-kind: Essay
+kind: Quick tip
 ---
 
 Most questions we put to a model already contain an answer — not to the
