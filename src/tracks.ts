@@ -29,9 +29,9 @@ export const TRACKS: readonly Track[] = [
   {
     id: 'business',
     kicker: 'shorter',
-    title: 'Business & LLMs',
+    title: 'AI at Work',
     description:
-      'High-level writing on where language models actually pay off, and where they do not.',
-    moreLabel: 'All business writing',
+      'Short pieces on using language models well at work — where they pay off, and where they do not.',
+    moreLabel: 'All writing on AI at work',
   },
 ];
