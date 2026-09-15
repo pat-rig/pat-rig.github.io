@@ -1,5 +1,5 @@
 ---
-title: What AI agents did to my reachable space
+title: The range, not the speed
 date: 2026-09-07
 summary: >-
   The ground a bicycle covers, against the ground a ship does — an animation,
