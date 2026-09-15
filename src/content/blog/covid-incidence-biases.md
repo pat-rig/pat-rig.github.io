@@ -976,3 +976,20 @@ alongside the positive rate, current ICU occupancy and the vaccination state
 of the population, it becomes considerably more expressive. Read alone, and
 tied to a fixed nationwide threshold, it quietly means something different in
 every district and in every wave.
+
+## Data
+
+Every series in the figures above — cases, tests, ICU occupancy, vaccinations —
+is from the [Our World in Data COVID-19 dataset](https://github.com/owid/covid-19-data)
+as it stood in autumn 2021, compiled there from national sources and published
+under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Two of its
+components have papers of their own, which Our World in Data asks to be cited:
+
+- **Testing** — Hasell, J., Mathieu, E., Beltekian, D., Macdonald, B., Giattino,
+  C., Ortiz-Ospina, E., Roser, M., Ritchie, H. (2020). A cross-country database
+  of COVID-19 testing. *Scientific Data* 7, 345.
+  [doi:10.1038/s41597-020-00688-8](https://doi.org/10.1038/s41597-020-00688-8)
+- **Vaccinations** — Mathieu, E., Ritchie, H., Ortiz-Ospina, E., Roser, M.,
+  Hasell, J., Appel, C., Giattino, C., Rodés-Guirao, L. (2021). A global
+  database of COVID-19 vaccinations. *Nature Human Behaviour* 5, 947–953.
+  [doi:10.1038/s41562-021-01122-8](https://doi.org/10.1038/s41562-021-01122-8)

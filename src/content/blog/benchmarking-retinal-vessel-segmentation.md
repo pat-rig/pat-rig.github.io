@@ -285,6 +285,7 @@ The images and annotations above come from three publicly available datasets:
   Classification-Based Approach Applied to Retinal Blood Vessel Segmentation.
   *IEEE Transactions on Biomedical Engineering* 59(9), 2538–2548.
   [doi:10.1109/TBME.2012.2205687](https://doi.org/10.1109/TBME.2012.2205687)
+  · [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 Both figures are reproduced from our preprint, which is published under
 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).

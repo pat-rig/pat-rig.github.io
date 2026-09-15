@@ -47,6 +47,30 @@ colour at low resolution and were identical at 300dpi.
 paper's Figure 1 is taken from `intensivregister.de` and `corona.rki.de`; that
 is not ours to republish.
 
+## 2b. Check the licence, and say so in the hand-off — do not wait to be asked
+
+Standing request from Patrick: every figure, table or PDF that goes on the
+site comes with a verdict on whether it may be published there. Verify at the
+source, never from memory:
+
+- **The paper's licence** — the arXiv abstract page prints it (2406.14994 is
+  CC BY-SA 4.0); PMLR's publication agreement is CC BY 4.0 and asks for a
+  citation plus a link to the PMLR page; a seminar paper or thesis has none,
+  so co-authors' consent is the question instead.
+- **Anything inside the figure the paper does not own.** A paper's licence
+  does not cover dataset photos or third-party graphics. FIVES and CHASE_DB1
+  are CC BY 4.0; DRIVE is research-use only, "copying, redistribution ...
+  prohibited" — a DRIVE example image in our own preprint is still DRIVE's.
+- **The data behind a redrawn chart.** Redrawing does not remove the
+  attribution: Our World in Data is CC BY 4.0 and asks that its testing and
+  vaccination datasets be cited by paper.
+- **Hosted PDFs**: `pdfimages -list paper.pdf` and grep the captions for
+  "taken from" before copying one into `public/papers/`.
+
+Put the licence line in the caption or in a "Datasets"/"Data" section at the
+foot of the post, as the calibration and benchmark posts do, and tell Patrick
+per item: OK / OK with attribution / not covered.
+
 ## 3. Convert
 
 PNG at `-r 150`, and let Astro do the rest. Do not reach for SVG: `pdftocairo
