@@ -7,10 +7,9 @@ summary: >-
   conditional version of it that says which subspaces may share what.
 tags: [vae, loss-functions]
 track: data-science
-mark: network
+mark: sigma
 kind: Thesis
 pin: 3
-status: draft
 paper:
   label: Master's thesis
   title: >-

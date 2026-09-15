@@ -14,6 +14,8 @@ const MARKS = [
   'contour',
   'virus',
   'vessels',
+  'microbe',
+  'sigma',
 ] as const;
 
 const blog = defineCollection({

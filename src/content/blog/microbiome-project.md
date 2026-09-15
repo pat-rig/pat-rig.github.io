@@ -7,10 +7,9 @@ summary: >-
   why the most familiar one, PCA, is the wrong tool for this data.
 tags: [dimensionality-reduction, embeddings, microbiome]
 track: data-science
-mark: distribution
+mark: microbe
 kind: Project
 pin: 4
-status: draft
 repo: https://github.com/pat-rig/Microbiome_Embeddings
 paper:
   label: Project report — not peer-reviewed

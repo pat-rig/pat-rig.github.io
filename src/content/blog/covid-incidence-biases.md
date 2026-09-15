@@ -10,7 +10,6 @@ track: data-science
 mark: virus
 kind: Report
 pin: 3
-status: draft
 repo: https://github.com/pat-rig/Covid_Incidence_Biases
 paper:
   label: Data analysis report — not peer-reviewed

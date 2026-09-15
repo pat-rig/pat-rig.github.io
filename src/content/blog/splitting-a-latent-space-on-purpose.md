@@ -10,7 +10,6 @@ track: data-science
 mark: contour
 kind: Note
 pin: 2
-status: draft
 paper:
   label: Seminar paper — not peer-reviewed
   title: >-

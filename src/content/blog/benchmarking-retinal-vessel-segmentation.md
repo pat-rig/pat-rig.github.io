@@ -9,7 +9,6 @@ tags: [segmentation, benchmarking, robustness, domain-shift]
 track: data-science
 mark: vessels
 kind: Publication
-status: draft
 paper:
   label: Preprint — not peer-reviewed
   title: >-

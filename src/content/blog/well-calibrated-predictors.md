@@ -1,6 +1,6 @@
 ---
 title: An argument for well-calibrated predictors in high-risk applications
-date: 2026-09-05
+date: 2024-07-03
 summary: >-
   A model that says 70% should be right 70% of the time. That property lets you
   estimate how well a model is doing without ever seeing a label — and that is
@@ -10,7 +10,6 @@ track: data-science
 mark: distribution
 kind: Publication
 pin: 1
-status: draft
 paper:
   title: >-
     Efficiently correcting patch-based segmentation errors to control

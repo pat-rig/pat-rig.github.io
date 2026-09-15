@@ -17,7 +17,9 @@ export type MarkName =
   | 'lines'
   | 'contour'
   | 'virus'
-  | 'vessels';
+  | 'vessels'
+  | 'microbe'
+  | 'sigma';
 
 interface Props {
   name: MarkName;
@@ -152,12 +154,13 @@ const gridCells = [
   }
 
   {/*
-    The one pictogram in the set — everything else here abstracts a shape of
-    data rather than depicting a subject. It earns the exception by being the
-    single glyph a reader recognises instantly, and it is held to the same
-    rules as the rest: currentColor only, no fills but the dots, geometry on
-    the same 40-unit grid. Eight spikes evenly spaced, because at ~37px an
-    irregular scatter reads as a smudge rather than as a virus.
+    One of two pictograms in the set (the other is `microbe`) — everything
+    else here abstracts a shape of data rather than depicting a subject. It
+    earns the exception by being a glyph a reader recognises instantly, and it
+    is held to the same rules as the rest: currentColor only, no fills but the
+    dots, geometry on the same 40-unit grid. Eight spikes evenly spaced,
+    because at ~37px an irregular scatter reads as a smudge rather than as a
+    virus.
   */}
   {
     name === 'virus' && (
@@ -257,6 +260,54 @@ const gridCells = [
         </g>
         {/* The optic disc: where every vessel in the image originates. */}
         <circle cx="27.1" cy="20" r="3.1" stroke="currentColor" stroke-width="1.5" />
+        </g>
+      </svg>
+    )
+  }
+
+  {/*
+    Three rod-shaped bacteria — the second pictogram, for the microbiome
+    post. Capsules rather than circles so nothing here rhymes with the virus
+    two entries up: no rim, no spikes. Three at different angles is the
+    fewest that reads as a population rather than a pill; a fourth crowded
+    the tile at ~37px. The wavy line is one flagellum, and the faint inner
+    dots are the same device the virus uses for its interior, which keeps
+    the two pictograms in one family.
+  */}
+  {
+    name === 'microbe' && (
+      <svg viewBox="0 0 40 40" fill="none">
+        <g stroke="currentColor" stroke-width="1.6">
+          <rect x="4" y="7" width="17" height="7" rx="3.5" transform="rotate(-20 12.5 10.5)" />
+          <rect x="18" y="17" width="17" height="7" rx="3.5" transform="rotate(25 26.5 20.5)" />
+          <rect x="6" y="26" width="15" height="7" rx="3.5" transform="rotate(-8 13.5 29.5)" />
+        </g>
+        <path d="M21.2 12 q3-2 4 0.5 t4-0.5" stroke="currentColor" stroke-width="1" opacity=".6" />
+        <g fill="currentColor" opacity=".55">
+          <circle cx="9.5" cy="10.8" r="1.1" />
+          <circle cx="14.2" cy="9.2" r="1.1" />
+          <circle cx="26" cy="20.4" r="1.1" />
+          <circle cx="10.5" cy="29.6" r="1.1" />
+          <circle cx="16.2" cy="29" r="1.1" />
+        </g>
+      </svg>
+    )
+  }
+
+  {/*
+    A capital sigma, for the thesis post — the one entry whose substance is
+    a derivation. Drawn as a path rather than set as text so it renders
+    identically without a font and takes the same stroke weight as the other
+    marks; the short vertical serifs at the two ends are what stop the shape
+    reading as an "M" on its side at ~37px.
+  */}
+  {
+    name === 'sigma' && (
+      <svg viewBox="0 0 40 40" fill="none">
+        <g stroke="currentColor" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round">
+          <path d="M30.5 8.5 H10.5 L21 20 L10.5 31.5 H30.5" />
+          <line x1="30.5" y1="8.5" x2="30.5" y2="11.5" />
+          <line x1="30.5" y1="31.5" x2="30.5" y2="28.5" />
         </g>
       </svg>
     )
