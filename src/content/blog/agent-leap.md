@@ -35,7 +35,7 @@ drive around all day and we do not go everywhere. We prioritise. Owning the
 car changed what is possible; the budget still decides where we go.
 
 The same holds for this technology. The range is new; what remains our
-responsibility is to decide where we want to go with it — and to evaluate
-that carefully before we set off, which takes knowing what is out there,
+responsibility is to decide where we want to go with it.
+We have to evaluate that carefully before we set off, which takes knowing what is out there,
 what it costs, and what it is worth to us. Having the opportunity at all is
 the big thing.
