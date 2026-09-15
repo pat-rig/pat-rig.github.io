@@ -2,8 +2,8 @@
 title: The range, not the speed
 date: 2026-09-07
 summary: >-
-  The ground a bicycle covers, against the ground a ship does — an animation,
-  and what it costs.
+  Coding agents did not make my work faster so much as make it reach further.
+  An animation of how much further, and a note on what the trip still costs.
 tags: [llms, agents]
 track: business
 mark: fork
