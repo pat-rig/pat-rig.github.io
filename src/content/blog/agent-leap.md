@@ -27,6 +27,13 @@ it lands on were all out of reach before. And I do not fly there alone: there
 is always a copilot at my side, so to speak, who guides me through those
 distant places and explains the technology I find there.
 
+This copilot is the key ingredient, and it is the part I think is easiest to
+misunderstand. It is not that the AI builds everything for me while I have no
+idea what is going on. The model lets me understand the new concepts as I go —
+it is good at explaining and patient about it — and the work is done hand in
+hand. That is why it is a ship in the picture: the AI is the vehicle, and I
+still have to fly it.
+
 A ship needs fuel, and fuel needs a credit card. None of this is free — going
 somewhere new still costs money and time, and the time includes learning the
 concepts on the way. It is the same as in real life: we all have cars, and in
