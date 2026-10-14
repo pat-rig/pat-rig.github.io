@@ -524,6 +524,7 @@ const { theme = 'paper' } = Astro.props;
       motifG?: Element;
       label?: Element;
       grad?: string;
+      motifR?: number;
     };
     const ALL = [...PLANETS, HOMEP] as P[];
     for (const p of ALL) {
@@ -542,6 +543,18 @@ const { theme = 'paper' } = Astro.props;
       p.label.textContent = p.name;
     }
     function drawMotif(p: P, R: number) {
+      /*
+       * Called every frame for every visible planet, but rebuilding is real DOM
+       * churn (removeChild/appendChild, several times per planet) and mobile
+       * Safari is markedly slower at that than desktop is. Most frames move R
+       * by a fraction of a pixel, so skip the rebuild unless it has moved
+       * enough to actually look different — this is what made the final
+       * approach (where Azure fills more and more of the frame) stutter and,
+       * on an iPhone 14 and a recent iPad, eventually stall for good.
+       */
+      const prev = p.motifR;
+      if (prev !== undefined && Math.abs(R - prev) < Math.max(0.5, prev * 0.02)) return;
+      p.motifR = R;
       const m = p.motifG!;
       while (m.firstChild) m.removeChild(m.firstChild);
       const st = {
@@ -758,8 +771,18 @@ const { theme = 'paper' } = Astro.props;
       BENCH = NODEG[2].h,
       HUT = NODEG[3].h,
       HUT_LABEL = NODEG[3].label;
-    /* the four towers, then the site furniture */
-    const TOWERS = [4, 5, 6, 7].map((i) => ({ node: NODEG[i], prop: PROPS[i] }));
+    /*
+     * The four towers, then the site furniture. Found by kind rather than by
+     * hardcoded index: a fixed [4, 5, 6, 7] is exactly what broke when the
+     * home-world title prop was inserted at index 4 and shifted every tower
+     * along by one — TOWERS[0] silently became that title prop, whose `h` is
+     * `{}`, and `tw.node.h.body!.setAttribute(...)` below threw on it every
+     * single playthrough, once the animation reached the crew-at-the-towers
+     * scene after landing. That uncaught throw killed the render loop for
+     * good (see the try/catch around render() in tick()) — on any browser,
+     * not only the iPhone/iPad it was first noticed on.
+     */
+    const TOWERS = PROPS.flatMap((p, i) => (p.kind === 'tower' ? [{ node: NODEG[i], prop: p }] : []));
     const SITE = NODEG[PROPS.findIndex((p) => p.kind === 'site')].h;
     const TITLE_NODE = NODEG[PROPS.findIndex((p) => p.kind === 'title' && p.world === 'azure')];
     const HOME_TITLE = NODEG[PROPS.findIndex((p) => p.kind === 'title' && p.world === 'home')];
@@ -1187,8 +1210,18 @@ const { theme = 'paper' } = Astro.props;
           /* the group is scaled by perspective, so undo that for the label */
           const lu = labelUnits / Math.max(clamp(s[3] * S_NODE, 0.001, 2.4), 0.001);
           const lm = (n as { lmul?: number }).lmul ?? 1;
-          ng.label.setAttribute('font-size', clamp(lu * lm, 5, 30).toFixed(2));
-          ng.label.setAttribute('y', (-(n.h + 6) - lu * lm * 0.8).toFixed(1));
+          /*
+           * Both lines below must use the same clamped size. The y-offset
+           * used to be driven by the raw, unclamped `lu * lm`, so on a window
+           * shape where that raw value ran past the font-size ceiling (wide
+           * but short, which inflates `labelUnits`), the label was pushed
+           * higher than its own on-screen size would suggest — tall enough,
+           * on the closing caption, for the glyph tops to clip against the
+           * frame. Reusing `fontSize` keeps the two in step.
+           */
+          const fontSize = clamp(lu * lm, 5, 30);
+          ng.label.setAttribute('font-size', fontSize.toFixed(2));
+          ng.label.setAttribute('y', (-(n.h + 6) - fontSize * 0.8).toFixed(1));
         });
 
         /* in over the first second, out as the ride ends */
@@ -1508,7 +1541,18 @@ const { theme = 'paper' } = Astro.props;
       if (playing) {
         t += dt;
         if (t >= DUR) t = 0;
-        render(t);
+        /*
+         * render() throwing would otherwise skip the requestAnimationFrame
+         * call below and stop the loop for good — a silent, permanent freeze
+         * rather than one dropped frame. Belt and braces alongside the
+         * drawMotif fix above: this is what keeps a single bad frame from
+         * ending the animation instead of just that frame.
+         */
+        try {
+          render(t);
+        } catch (err) {
+          console.error('agent-leap: render() failed, skipping frame', err);
+        }
       }
       raf = requestAnimationFrame(tick);
     }
