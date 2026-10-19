@@ -5,7 +5,7 @@ summary: >-
   The more a company depends on people finding each other's work, the more it
   loses by storing it for a human to browse rather than for a model to retrieve
   from.
-tags: [llms, retrieval]
+tags: [llm-applications, retrieval]
 track: business
 mark: grid
 kind: Essay

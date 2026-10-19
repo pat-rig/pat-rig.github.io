@@ -4,7 +4,7 @@ date: 2026-09-07
 summary: >-
   Coding agents did not make my work faster so much as make it reach further.
   An animation of how much further, and a note on what the trip still costs.
-tags: [llms, agents]
+tags: [llm-applications, agents]
 track: business
 mark: fork
 kind: Animation

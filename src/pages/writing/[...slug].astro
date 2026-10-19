@@ -1431,6 +1431,117 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
   }
 
   /*
+   * The same post's bike-lock ladder: three ways to bring a model into the
+   * same purchase, each with the workflow it leaves. Rows rather than an SVG,
+   * because the quoted questions are long enough that type measured in viewBox
+   * units would come out unreadable on a phone. The rung the post argues for is the one at full ink; the other two
+   * sit at a line's weight, the way the figure above treats the route it is
+   * not recommending.
+   */
+  .post__body :global(.lk__figure) {
+    margin-top: var(--space-6);
+    margin-bottom: var(--space-6);
+  }
+
+  .post__body :global(.lk__problem) {
+    margin-bottom: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text-2);
+  }
+
+  .post__body :global(.lk) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .post__body :global(.lk__rung) {
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-1);
+  }
+
+  .post__body :global(.lk__rung--on) {
+    border-color: var(--text-0);
+    background: var(--surface-1);
+  }
+
+  .post__body :global(.lk__n) {
+    margin: 0 0 var(--space-1);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text-2);
+  }
+
+  .post__body :global(.lk__rung--on .lk__n) {
+    color: var(--text-0);
+  }
+
+  .post__body :global(.lk__kind) {
+    margin: 0;
+    font-weight: 600;
+    font-size: var(--step--1);
+  }
+
+  .post__body :global(.lk__q) {
+    margin-top: var(--space-1);
+    margin-bottom: 0;
+    font-size: var(--step--1);
+    line-height: 1.5;
+    color: var(--text-1);
+  }
+
+  /*
+   * The workflow behind each rung, one step per line. A filled dot is a step
+   * the model or an agent takes, an open dot one I take myself, so the number
+   * of open dots shrinking from rung to rung reads at a glance.
+   */
+  .post__body :global(.lk__flow) {
+    margin: var(--space-2) 0 0;
+    padding: var(--space-2) 0 0;
+    border-top: 1px solid var(--line);
+    list-style: none;
+  }
+
+  .post__body :global(.lk__step) {
+    position: relative;
+    margin: 0;
+    padding-left: 1.1rem;
+    font-size: var(--step--1);
+    line-height: 1.5;
+    color: var(--text-2);
+  }
+
+  .post__body :global(.lk__step + .lk__step) {
+    margin-top: 0.15rem;
+  }
+
+  .post__body :global(.lk__step::before) {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.5em;
+    width: 0.5rem;
+    height: 0.5rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 50%;
+  }
+
+  .post__body :global(.lk__step--ai::before) {
+    border-color: var(--text-0);
+    background: var(--text-0);
+  }
+
+  .post__body :global(.lk__figure figcaption) {
+    margin-top: var(--space-3);
+    font-size: var(--step--1);
+    line-height: 1.45;
+    color: var(--text-2);
+    text-wrap: pretty;
+  }
+
+  /*
    * "What is good context?": one long thread against a column of separate
    * new chats on the same topics. The thread uses the same message/badge look
    * as other posts' illustrative chats (2px corners, no shadows; my messages a
