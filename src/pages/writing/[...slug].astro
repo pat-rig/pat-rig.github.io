@@ -1429,4 +1429,163 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
   .post__body :global(.pq-fig .pq-route--skip) {
     fill: var(--text-0);
   }
+
+  /*
+   * "What is good context?": one long thread against a column of separate
+   * new chats on the same topics. The thread uses the same message/badge look
+   * as other posts' illustrative chats (2px corners, no shadows; my messages a
+   * surface step, the model's a 1px line); three short asides carry a numbered
+   * badge that reappears inline in the payoff answer, so the connection reads
+   * without following prose. Two columns once the article column can hold
+   * them; below that, the thread stacks above the separate chats.
+   */
+  .post__body :global(.hc__figure) {
+    margin-top: var(--space-6);
+    margin-bottom: var(--space-6);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--line);
+  }
+
+  .post__body :global(.hc__label) {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text-2);
+  }
+
+  .post__body :global(.hc) {
+    display: grid;
+    gap: var(--space-6);
+    margin-top: var(--space-4);
+  }
+
+  @media (min-width: 46rem) {
+    .post__body :global(.hc) {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: start;
+      gap: var(--space-5);
+    }
+  }
+
+  .post__body :global(.hc__col-title) {
+    margin-bottom: var(--space-3);
+    font-weight: 600;
+    font-size: var(--step-0);
+  }
+
+  .post__body :global(.hc__col-num) {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    font-weight: 400;
+    color: var(--text-2);
+  }
+
+  .post__body :global(.hc__thread) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  /* A bare divider marking where the thread moved to the next house topic. */
+  .post__body :global(.hc__head) {
+    margin: 0;
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: var(--text-2);
+  }
+
+  .post__body :global(.hc__collapsed) {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text-2);
+    text-align: center;
+  }
+
+  .post__body :global(.hc__msg) {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-1);
+    font-size: var(--step--1);
+    line-height: 1.5;
+  }
+
+  .post__body :global(.hc__msg p) {
+    margin: 0;
+  }
+
+  .post__body :global(.hc__msg--me) {
+    background: var(--surface-2);
+  }
+
+  /* An aside dropped in passing, not answering anything: lighter than a reply. */
+  .post__body :global(.hc__msg--aside) {
+    background: transparent;
+    border: 1px dashed var(--line-strong);
+  }
+
+  .post__body :global(.hc__msg--ai) {
+    border: 1px solid var(--line);
+  }
+
+  /* Ties the payoff answer back to the aside it drew on. */
+  .post__body :global(.hc__ref) {
+    display: inline-block;
+    min-width: 1.5em;
+    padding: 0 0.25em;
+    margin: 0 0.35em 0 0;
+    border: 1px solid var(--text-0);
+    border-radius: var(--radius-1);
+    background: var(--text-0);
+    color: var(--surface-0);
+    font-family: var(--font-mono);
+    font-size: 0.8em;
+    line-height: 1.4;
+    text-align: center;
+    vertical-align: 0.05em;
+  }
+
+  /* Inside the answer the badge trails a word, so it sits tight against it. */
+  .post__body :global(.hc__msg--ai .hc__ref) {
+    margin: 0 0 0 0.15em;
+  }
+
+  .post__body :global(.hc__chats) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  /* One separate chat per topic: its own box, nothing carried over. */
+  .post__body :global(.hc__chat) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-1);
+  }
+
+  /* Marks a prompt as shortened: the real one would carry more detail. */
+  .post__body :global(.hc__more) {
+    font-family: var(--font-mono);
+    color: var(--text-2);
+  }
+
+  .post__body :global(.hc__chat-head) {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text-2);
+  }
+
+  .post__body :global(.hc__figure figcaption) {
+    margin-top: var(--space-4);
+    font-size: var(--step--1);
+    line-height: 1.45;
+    color: var(--text-2);
+    text-wrap: pretty;
+  }
 </style>
